@@ -1,0 +1,77 @@
+{
+  "name": "Shipment",
+  "type": "object",
+  "properties": {
+    "shipment_id": {
+      "type": "string",
+      "description": "Unique shipment reference number"
+    },
+    "supplier": {
+      "type": "string",
+      "description": "Supplier or vendor name"
+    },
+    "origin": {
+      "type": "string",
+      "description": "Origin city / country"
+    },
+    "destination": {
+      "type": "string",
+      "description": "Destination plant or facility"
+    },
+    "part_number": {
+      "type": "string",
+      "description": "Part or component being shipped"
+    },
+    "quantity": {
+      "type": "number",
+      "description": "Units in this shipment"
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "in_transit",
+        "customs",
+        "arrived"
+      ],
+      "default": "in_transit",
+      "description": "Current logistics stage"
+    },
+    "eta": {
+      "type": "string",
+      "format": "date",
+      "description": "Estimated arrival date"
+    },
+    "criticality": {
+      "type": "string",
+      "enum": [
+        "HIGH",
+        "MEDIUM",
+        "LOW"
+      ],
+      "description": "Priority level linked to production impact"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes or customs details"
+    },
+    "dispatched_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the shipment was dispatched"
+    },
+    "arrived_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the shipment arrived"
+    }
+  },
+  "required": [
+    "shipment_id",
+    "supplier",
+    "origin",
+    "destination",
+    "part_number",
+    "stage",
+    "criticality"
+  ]
+}
