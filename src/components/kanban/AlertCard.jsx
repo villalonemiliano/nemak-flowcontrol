@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Draggable } from "@hello-pangea/dnd";
-import { MapPin, Package, Clock } from "lucide-react";
+import { Package, Clock } from "lucide-react";
+import { motion } from "framer-motion";
 
 const criticalityConfig = {
-  HIGH:   { badge: "bg-[#FF3B30]/8 text-[#FF3B30]",  label: "High",   indicator: "bg-[#FF3B30]" },
-  MEDIUM: { badge: "bg-[#FF9500]/10 text-[#FF9500]", label: "Medium", indicator: "bg-[#FF9500]" },
-  LOW:    { badge: "bg-[#007AFF]/8 text-[#007AFF]",  label: "Low",    indicator: "bg-[#007AFF]" },
+  HIGH:   { badge: "bg-[#FFE2E1] text-[#FF3B30]", label: "High",   indicator: "bg-[#FF3B30]", glow: true },
+  MEDIUM: { badge: "bg-[#FFEED6] text-[#FF9500]", label: "Medium", indicator: "bg-[#FF9500]", glow: false },
+  LOW:    { badge: "bg-[#E1F0FF] text-[#007AFF]", label: "Low",    indicator: "bg-[#007AFF]", glow: false },
 };
 
 function formatElapsed(ms) {
@@ -39,19 +40,32 @@ export default function AlertCard({ trigger, index }) {
   return (
     <Draggable draggableId={trigger.id} index={index}>
       {(provided, snapshot) => (
-        <div
+        <motion.div
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
+          initial={{ opacity: 0, y: 10, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+          whileHover={!snapshot.isDragging ? {
+            y: -3,
+            scale: 1.005,
+            boxShadow: "0 12px 30px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04)",
+            transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
+          } : {}}
+          whileTap={{ scale: 0.97, transition: { duration: 0.12, ease: [0.25, 1, 0.5, 1] } }}
           style={{
             ...provided.draggableProps.style,
             boxShadow: snapshot.isDragging
-              ? "0 16px 40px rgba(0,0,0,0.10)"
+              ? "0 20px 48px rgba(0,0,0,0.14), 0 4px 16px rgba(0,0,0,0.08)"
+              : cfg.glow
+              ? undefined
               : "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
+            animation: cfg.glow && !snapshot.isDragging && !isResolved ? "highGlow 3s ease-in-out infinite" : undefined,
+            opacity: snapshot.isDragging ? 0.88 : 1,
+            rotate: snapshot.isDragging ? "2deg" : "0deg",
           }}
-          className={`bg-white rounded-xl border border-[#E5E5EA] cursor-grab active:cursor-grabbing select-none transition-transform duration-150 ${
-            snapshot.isDragging ? "scale-[1.02]" : "hover:-translate-y-px"
-          }`}
+          className={`bg-white rounded-xl border border-[#E5E5EA] cursor-grab active:cursor-grabbing select-none`}
         >
           {/* Criticality top bar */}
           <div className={`h-[3px] rounded-t-xl ${cfg.indicator}`} />
@@ -59,10 +73,10 @@ export default function AlertCard({ trigger, index }) {
           <div className="p-4">
             {/* Header */}
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-mono text-[#8E8E93] tracking-wider">
+              <span className="text-[11px] font-mono text-[#8E8E93] tracking-wider truncate mr-2">
                 {trigger.production_line}
               </span>
-              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${cfg.badge}`}>
+              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${cfg.badge}`}>
                 {cfg.label}
               </span>
             </div>
@@ -106,7 +120,7 @@ export default function AlertCard({ trigger, index }) {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
     </Draggable>
   );

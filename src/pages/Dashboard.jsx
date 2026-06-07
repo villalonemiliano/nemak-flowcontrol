@@ -96,9 +96,9 @@ export default function Dashboard() {
         {/* Columns */}
         <DragDropContext onDragEnd={handleDragEnd}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
-            <AlertColumn columnId="unassigned" triggers={columns.unassigned} />
-            <AlertColumn columnId="in_progress" triggers={columns.in_progress} />
-            <AlertColumn columnId="resolved" triggers={columns.resolved} />
+            <AlertColumn columnId="unassigned" triggers={columns.unassigned} index={0} />
+            <AlertColumn columnId="in_progress" triggers={columns.in_progress} index={1} />
+            <AlertColumn columnId="resolved" triggers={columns.resolved} index={2} />
           </div>
         </DragDropContext>
       </motion.div>
