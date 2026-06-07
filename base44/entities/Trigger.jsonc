@@ -1,0 +1,54 @@
+{
+  "name": "Trigger",
+  "type": "object",
+  "properties": {
+    "production_line": {
+      "type": "string",
+      "description": "Production line or area identifier"
+    },
+    "part_number": {
+      "type": "string",
+      "description": "Missing part or component number"
+    },
+    "criticality": {
+      "type": "string",
+      "enum": [
+        "HIGH",
+        "MEDIUM",
+        "LOW"
+      ],
+      "description": "Priority/criticality level of the shortage"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional comments or description"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "unassigned",
+        "in_progress",
+        "resolved"
+      ],
+      "default": "unassigned",
+      "description": "Current pipeline stage"
+    },
+    "triggered_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the alert was activated"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the trigger was resolved"
+    }
+  },
+  "required": [
+    "production_line",
+    "part_number",
+    "criticality",
+    "status",
+    "triggered_at"
+  ]
+}
