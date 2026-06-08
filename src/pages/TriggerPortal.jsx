@@ -2,26 +2,12 @@ import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertTriangle, Send, CheckCircle2, Zap } from "lucide-react";
-import CriticalitySelector from "@/components/trigger/CriticalitySelector";
+import { AlertTriangle, Send, CheckCircle2, Zap, Package } from "lucide-react";
 
-const productionLines = [
-  "HPDC Line 1",
-  "HPDC Line 2",
-  "HPDC Line 3",
-  "Machining Center 1",
-  "Machining Center 2",
-  "Machining Center 3",
-  "Melting Furnace A",
-  "Melting Furnace B",
-  "CNC Station Alpha",
-  "Assembly Line 1",
-];
+const PRODUCTION_LINE = "Sopladora 25 Linea F";
 
 const partNumbers = [
   "NMK-AL-4021",
@@ -37,12 +23,7 @@ const partNumbers = [
 ];
 
 export default function TriggerPortal() {
-  const [form, setForm] = useState({
-    production_line: "",
-    part_number: "",
-    criticality: "",
-    description: "",
-  });
+  const [selectedPart, setSelectedPart] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const queryClient = useQueryClient();
 
@@ -53,7 +34,7 @@ export default function TriggerPortal() {
       setSubmitted(true);
       setTimeout(() => {
         setSubmitted(false);
-        setForm({ production_line: "", part_number: "", criticality: "", description: "" });
+        setSelectedPart("");
       }, 3000);
     },
     onError: () => {
@@ -63,12 +44,14 @@ export default function TriggerPortal() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.production_line || !form.part_number || !form.criticality) {
-      toast.error("Please fill in all required fields.");
+    if (!selectedPart) {
+      toast.error("Please select a missing part.");
       return;
     }
     createMutation.mutate({
-      ...form,
+      production_line: PRODUCTION_LINE,
+      part_number: selectedPart,
+      criticality: "HIGH",
       status: "unassigned",
       triggered_at: new Date().toISOString(),
     });
@@ -124,64 +107,51 @@ export default function TriggerPortal() {
               className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden"
             >
               <div className="p-6 sm:p-8 space-y-6">
+                {/* Production Line — fixed, read-only */}
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold text-foreground">
-                    Production Line / Area <span className="text-red-500">*</span>
+                    Production Line / Area
                   </Label>
-                  <Select value={form.production_line} onValueChange={(v) => setForm({ ...form, production_line: v })}>
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Select production line" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {productionLines.map((line) => (
-                        <SelectItem key={line} value={line}>{line}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="h-11 px-4 flex items-center rounded-xl bg-[#F2F2F7] border border-[#E5E5EA] text-[14px] font-medium text-[#3C3C43]">
+                    {PRODUCTION_LINE}
+                  </div>
                 </div>
 
-                <div className="space-y-2">
+                {/* Part number — button grid */}
+                <div className="space-y-3">
                   <Label className="text-sm font-semibold text-foreground">
                     Missing Part / Component <span className="text-red-500">*</span>
                   </Label>
-                  <Select value={form.part_number} onValueChange={(v) => setForm({ ...form, part_number: v })}>
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Select part number" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {partNumbers.map((pn) => (
-                        <SelectItem key={pn} value={pn}>{pn}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-foreground">
-                    Criticality Level <span className="text-red-500">*</span>
-                  </Label>
-                  <CriticalitySelector value={form.criticality} onChange={(v) => setForm({ ...form, criticality: v })} />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-foreground">
-                    {"Description / Comments "}
-                    <span className="text-muted-foreground font-normal">(optional)</span>
-                  </Label>
-                  <Textarea
-                    value={form.description}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    placeholder="Briefly describe the situation..."
-                    className="resize-none h-24"
-                  />
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {partNumbers.map((pn) => {
+                      const isSelected = selectedPart === pn;
+                      return (
+                        <motion.button
+                          key={pn}
+                          type="button"
+                          onClick={() => setSelectedPart(pn)}
+                          whileTap={{ scale: 0.96 }}
+                          transition={{ duration: 0.12, ease: [0.25, 1, 0.5, 1] }}
+                          className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border text-left text-[13px] font-semibold transition-all duration-150 ${
+                            isSelected
+                              ? "bg-[#002F6C] border-[#002F6C] text-white shadow-md"
+                              : "bg-white border-[#E5E5EA] text-[#1C1C1E] hover:border-[#002F6C] hover:bg-[#002F6C]/5"
+                          }`}
+                        >
+                          <Package className={`w-4 h-4 shrink-0 ${isSelected ? "text-white/80" : "text-[#8E8E93]"}`} />
+                          <span className="font-mono">{pn}</span>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
               <div className="px-6 sm:px-8 py-5 bg-muted/50 border-t border-border">
                 <Button
                   type="submit"
-                  disabled={createMutation.isPending}
-                  className="w-full h-12 bg-[#002F6C] hover:bg-[#001F4C] text-white font-semibold text-sm tracking-wide rounded-xl shadow-md hover:shadow-lg transition-all duration-200"
+                  disabled={createMutation.isPending || !selectedPart}
+                  className="w-full h-12 bg-[#002F6C] hover:bg-[#001F4C] text-white font-semibold text-sm tracking-wide rounded-xl shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
                 >
                   {createMutation.isPending ? (
                     <div className="flex items-center gap-2">
