@@ -1,13 +1,14 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext } from "@hello-pangea/dnd";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import AlertKPIBar from "@/components/kanban/AlertKPIBar";
 import AlertColumn from "@/components/kanban/AlertColumn";
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
+  const [lastMoved, setLastMoved] = useState(null); // { id, from, to }
 
   const { data: triggers = [], isLoading } = useQuery({
     queryKey: ["triggers"],
@@ -30,7 +31,7 @@ export default function Dashboard() {
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
-    const { draggableId, destination } = result;
+    const { draggableId, source, destination } = result;
     const newStatus = destination.droppableId;
     const trigger = triggers.find((t) => t.id === draggableId);
     if (!trigger || trigger.status === newStatus) return;
@@ -41,6 +42,10 @@ export default function Dashboard() {
     } else {
       updateData.resolved_at = null;
     }
+
+    setLastMoved({ id: draggableId, from: source.droppableId, to: newStatus, part: trigger.part_number });
+    setTimeout(() => setLastMoved(null), 2800);
+
     updateMutation.mutate({ id: draggableId, data: updateData });
   };
 
@@ -51,6 +56,8 @@ export default function Dashboard() {
       </div>
     );
   }
+
+  const columnLabel = { unassigned: "Pending", in_progress: "In Progress", resolved: "Resolved" };
 
   return (
     <div className="min-h-screen bg-[#F2F2F7] p-4 sm:p-6 lg:p-8 pb-24 lg:pb-10">
@@ -72,6 +79,30 @@ export default function Dashboard() {
 
       {/* KPI Bar */}
       <AlertKPIBar triggers={triggers} />
+
+      {/* Move Toast */}
+      <AnimatePresence>
+        {lastMoved && (
+          <motion.div
+            key={lastMoved.id + lastMoved.to}
+            initial={{ opacity: 0, y: 16, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-4 flex items-center gap-3 bg-white border border-[#E5E5EA] rounded-xl px-4 py-3 shadow-md"
+            style={{ boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}
+          >
+            <div className="w-2 h-2 rounded-full bg-[#30D158] animate-pulse shrink-0" />
+            <span className="text-[13px] font-medium text-[#1C1C1E]">
+              <span className="font-mono text-[#002F6C]">{lastMoved.part}</span>
+              {" moved: "}
+              <span className="text-[#8E8E93]">{columnLabel[lastMoved.from]}</span>
+              {" → "}
+              <span className="font-semibold text-[#1C1C1E]">{columnLabel[lastMoved.to]}</span>
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Kanban Board */}
       <motion.div
