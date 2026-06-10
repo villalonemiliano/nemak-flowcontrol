@@ -14,9 +14,8 @@ import ResetPassword from '@/pages/ResetPassword';
 
 import AppLayout from '@/components/layout/AppLayout';
 import TriggerPortal from '@/pages/TriggerPortal';
-import Dashboard from '@/pages/Dashboard';
 import Inventario from '@/pages/Inventario';
-import ZonaKanban from '@/pages/ZonaKanban';
+import Kanban from '@/pages/Kanban';
 import Sopladora1 from '@/pages/Sopladora1';
 
 const AuthenticatedApp = () => {
@@ -49,9 +48,8 @@ const AuthenticatedApp = () => {
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route element={<AppLayout />}>
           <Route path="/" element={<TriggerPortal />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/kanban" element={<Kanban />} />
           <Route path="/inventario" element={<Inventario />} />
-          <Route path="/kanban" element={<ZonaKanban />} />
           <Route path="/sopladora1" element={<Sopladora1 />} />
         </Route>
       </Route>

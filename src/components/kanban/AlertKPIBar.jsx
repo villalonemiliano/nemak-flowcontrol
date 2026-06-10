@@ -11,44 +11,33 @@ function formatDuration(ms) {
   return `${Math.floor(ms / 1000)}s`;
 }
 
-function KPI({ icon: Icon, label, value, sub, iconColor, accentBg, delay, highlight }) {
+function KPI({ icon: Icon, label, value, sub, iconColor, bgClass, borderClass, delay, highlight }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10, scale: 0.97 }}
+      initial={{ opacity: 0, y: 8, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.32, delay, ease: [0.16, 1, 0.3, 1] }}
-      whileHover={{
-        y: -2,
-        boxShadow: "0 8px 24px rgba(0,0,0,0.07)",
-        transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] },
-      }}
-      className="rounded-2xl px-4 py-3.5 flex items-center gap-3 relative z-10"
-      style={{
-        background: highlight ? "rgba(255,59,48,0.06)" : "rgba(255,255,255,0.05)",
-        border: highlight ? "1px solid rgba(255,59,48,0.2)" : "1px solid rgba(255,255,255,0.09)",
-        backdropFilter: "blur(20px)",
-        boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
-      }}
+      transition={{ duration: 0.28, delay, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -1, transition: { duration: 0.2 } }}
+      className={`rounded-2xl px-3.5 py-3 flex items-center gap-3 border ${bgClass} ${borderClass}`}
     >
-      <div className={`w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0 ${accentBg}`}>
-        <Icon className={`w-[16px] h-[16px] ${iconColor}`} />
+      <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-white`}
+        style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+        <Icon className="w-[15px] h-[15px]" style={{ color: iconColor }} />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[0.07em] leading-none mb-1.5 truncate">
+        <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-[0.08em] leading-none mb-1 truncate">
           {label}
         </p>
         <motion.p
           key={String(value)}
-          initial={{ opacity: 0.3, y: 3 }}
+          initial={{ opacity: 0.4, y: 2 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-          className="text-[20px] font-bold text-white leading-none tracking-tight tabular-nums"
+          transition={{ duration: 0.15 }}
+          className="text-[18px] font-black text-slate-900 leading-none tracking-tight tabular-nums"
         >
           {value}
         </motion.p>
-        {sub && (
-          <p className="text-[10px] text-white/25 mt-1 truncate">{sub}</p>
-        )}
+        {sub && <p className="text-[9px] text-slate-400 mt-0.5 truncate">{sub}</p>}
       </div>
     </motion.div>
   );
@@ -86,15 +75,15 @@ export default function AlertKPIBar({ triggers }) {
   }).length;
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 relative z-10">
-      <KPI icon={TrendingDown}  label="Pending"          value={pending}      iconColor="text-[#FF3B30]" accentBg="bg-[#FFF1F0]" delay={0}    highlight={pending > 0} />
-      <KPI icon={Activity}      label="In Progress"      value={active}       iconColor="text-[#FF9500]" accentBg="bg-[#FFF8EC]" delay={0.05} />
-      <KPI icon={AlertTriangle} label="High Risk"        value={highRisk}     iconColor="text-[#FF3B30]" accentBg="bg-[#FFF1F0]" delay={0.10} highlight={highRisk > 0} />
-      <KPI icon={CheckCircle2}  label="Resolved Today"   value={resolvedToday} iconColor="text-[#30D158]" accentBg="bg-[#EDFBF1]" delay={0.15} />
-      <KPI icon={Clock}         label="Avg Resolution"   value={avgResolutionMs ? formatDuration(avgResolutionMs) : "—"} sub={resolvedWithTimes.length ? `${resolvedWithTimes.length} resolved` : "No data yet"} iconColor="text-[#007AFF]" accentBg="bg-[#EEF5FF]" delay={0.20} />
-      <KPI icon={Timer}         label="Longest Open"     value={longestOpenMs ? formatDuration(longestOpenMs) : "—"} sub={longestOpenMs ? "oldest active" : "All clear"} iconColor="text-[#FF9500]" accentBg="bg-[#FFF8EC]" delay={0.25} />
-      <KPI icon={BarChart2}     label="Resolution Rate"  value={`${resRate}%`} sub={`${resolved} of ${total}`} iconColor="text-[#30D158]" accentBg="bg-[#EDFBF1]" delay={0.30} />
-      <KPI icon={Zap}           label="Last 24 h"        value={last24h}       sub="new alerts" iconColor="text-[#002F6C]" accentBg="bg-[#EEF2FF]" delay={0.35} />
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
+      <KPI icon={TrendingDown}  label="Pendiente"        value={pending}       iconColor="#EF4444" bgClass={pending > 0 ? "bg-red-50" : "bg-white"} borderClass={pending > 0 ? "border-red-200" : "border-slate-200"} delay={0}    highlight={pending > 0} />
+      <KPI icon={Activity}      label="En Progreso"      value={active}        iconColor="#F59E0B" bgClass="bg-white"     borderClass="border-slate-200" delay={0.04} />
+      <KPI icon={AlertTriangle} label="Alto Riesgo"      value={highRisk}      iconColor="#EF4444" bgClass={highRisk > 0 ? "bg-red-50" : "bg-white"} borderClass={highRisk > 0 ? "border-red-200" : "border-slate-200"} delay={0.08} />
+      <KPI icon={CheckCircle2}  label="Resueltos Hoy"   value={resolvedToday} iconColor="#22C55E" bgClass="bg-white"     borderClass="border-slate-200" delay={0.12} />
+      <KPI icon={Clock}         label="Avg Resolución"  value={avgResolutionMs ? formatDuration(avgResolutionMs) : "—"} sub={resolvedWithTimes.length ? `${resolvedWithTimes.length} resueltos` : "Sin datos"} iconColor="#3B82F6" bgClass="bg-white" borderClass="border-slate-200" delay={0.16} />
+      <KPI icon={Timer}         label="Más Tiempo Abierto" value={longestOpenMs ? formatDuration(longestOpenMs) : "—"} sub={longestOpenMs ? "alerta más vieja" : "Todo en orden"} iconColor="#F59E0B" bgClass="bg-white" borderClass="border-slate-200" delay={0.20} />
+      <KPI icon={BarChart2}     label="Tasa Resolución" value={`${resRate}%`} sub={`${resolved} de ${total}`} iconColor="#22C55E" bgClass="bg-white" borderClass="border-slate-200" delay={0.24} />
+      <KPI icon={Zap}           label="Últimas 24h"     value={last24h}       sub="nuevas alertas" iconColor="#6366F1" bgClass="bg-white" borderClass="border-slate-200" delay={0.28} />
     </div>
   );
 }
