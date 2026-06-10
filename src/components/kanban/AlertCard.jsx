@@ -65,7 +65,12 @@ export default function AlertCard({ trigger, index }) {
             opacity: snapshot.isDragging ? 0.88 : 1,
             rotate: snapshot.isDragging ? "2deg" : "0deg",
           }}
-          className={`bg-white rounded-xl border border-[#E5E5EA] cursor-grab active:cursor-grabbing select-none`}
+          className="rounded-xl cursor-grab active:cursor-grabbing select-none"
+            style={{
+              background: "linear-gradient(145deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              backdropFilter: "blur(20px)",
+            }}
         >
           {/* Criticality top bar */}
           <div className={`h-[3px] rounded-t-xl ${cfg.indicator}`} />
@@ -73,7 +78,7 @@ export default function AlertCard({ trigger, index }) {
           <div className="p-4">
             {/* Header */}
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-mono text-[#8E8E93] tracking-wider truncate mr-2">
+              <span className="text-[11px] font-mono text-white/40 tracking-wider truncate mr-2">
                 {trigger.production_line}
               </span>
               <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${cfg.badge}`}>
@@ -83,22 +88,22 @@ export default function AlertCard({ trigger, index }) {
 
             {/* Part number */}
             <div className="flex items-center gap-1.5 mb-2">
-              <Package className="w-3.5 h-3.5 text-[#8E8E93] shrink-0" />
-              <span className="text-[14px] font-semibold text-[#1C1C1E] font-mono truncate">
+              <Package className="w-3.5 h-3.5 text-white/30 shrink-0" />
+              <span className="text-[14px] font-semibold text-white font-mono truncate">
                 {trigger.part_number}
               </span>
             </div>
 
             {/* Description */}
             {trigger.description && (
-              <p className="text-[12px] text-[#8E8E93] leading-relaxed line-clamp-2 mb-3">
+              <p className="text-[12px] text-white/40 leading-relaxed line-clamp-2 mb-3">
                 {trigger.description}
               </p>
             )}
 
             {/* Footer */}
-            <div className="flex items-center justify-between pt-3 border-t border-[#F2F2F7]">
-              <div className="text-[11px] text-[#8E8E93]">
+            <div className="flex items-center justify-between pt-3 border-t border-white/8">
+              <div className="text-[11px] text-white/30">
                 {new Date(trigger.triggered_at).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
@@ -112,7 +117,7 @@ export default function AlertCard({ trigger, index }) {
                     ? "text-[#30D158]"
                     : trigger.criticality === "HIGH"
                     ? "text-[#FF3B30]"
-                    : "text-[#8E8E93]"
+                    : "text-white/40"
                 }`}
               >
                 <Clock className="w-3 h-3" />

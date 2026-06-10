@@ -22,16 +22,19 @@ function KPI({ icon: Icon, label, value, sub, iconColor, accentBg, delay, highli
         boxShadow: "0 8px 24px rgba(0,0,0,0.07)",
         transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] },
       }}
-      className={`bg-white rounded-2xl border px-4 py-3.5 flex items-center gap-3 ${
-        highlight ? "border-[#FF3B30]/25" : "border-[#E5E5EA]"
-      }`}
-      style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
+      className="rounded-2xl px-4 py-3.5 flex items-center gap-3 relative z-10"
+      style={{
+        background: highlight ? "rgba(255,59,48,0.06)" : "rgba(255,255,255,0.05)",
+        border: highlight ? "1px solid rgba(255,59,48,0.2)" : "1px solid rgba(255,255,255,0.09)",
+        backdropFilter: "blur(20px)",
+        boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+      }}
     >
       <div className={`w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0 ${accentBg}`}>
         <Icon className={`w-[16px] h-[16px] ${iconColor}`} />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold text-[#8E8E93] uppercase tracking-[0.07em] leading-none mb-1.5 truncate">
+        <p className="text-[10px] font-semibold text-white/35 uppercase tracking-[0.07em] leading-none mb-1.5 truncate">
           {label}
         </p>
         <motion.p
@@ -39,12 +42,12 @@ function KPI({ icon: Icon, label, value, sub, iconColor, accentBg, delay, highli
           initial={{ opacity: 0.3, y: 3 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-          className="text-[20px] font-bold text-[#1C1C1E] leading-none tracking-tight tabular-nums"
+          className="text-[20px] font-bold text-white leading-none tracking-tight tabular-nums"
         >
           {value}
         </motion.p>
         {sub && (
-          <p className="text-[10px] text-[#C7C7CC] mt-1 truncate">{sub}</p>
+          <p className="text-[10px] text-white/25 mt-1 truncate">{sub}</p>
         )}
       </div>
     </motion.div>
@@ -83,7 +86,7 @@ export default function AlertKPIBar({ triggers }) {
   }).length;
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 relative z-10">
       <KPI icon={TrendingDown}  label="Pending"          value={pending}      iconColor="text-[#FF3B30]" accentBg="bg-[#FFF1F0]" delay={0}    highlight={pending > 0} />
       <KPI icon={Activity}      label="In Progress"      value={active}       iconColor="text-[#FF9500]" accentBg="bg-[#FFF8EC]" delay={0.05} />
       <KPI icon={AlertTriangle} label="High Risk"        value={highRisk}     iconColor="text-[#FF3B30]" accentBg="bg-[#FFF1F0]" delay={0.10} highlight={highRisk > 0} />

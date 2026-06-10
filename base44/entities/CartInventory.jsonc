@@ -1,0 +1,36 @@
+{
+  "name": "CartInventory",
+  "type": "object",
+  "properties": {
+    "zone": {
+      "type": "string",
+      "enum": [
+        "sopladora",
+        "kanban"
+      ],
+      "description": "Zone where this inventory record belongs"
+    },
+    "current_carts": {
+      "type": "number",
+      "description": "Current number of miscellaneous carts available"
+    },
+    "max_capacity": {
+      "type": "number",
+      "description": "Maximum cart capacity for this zone"
+    },
+    "reorder_point": {
+      "type": "number",
+      "description": "Number of carts at which a replenishment request is triggered"
+    },
+    "last_updated_by": {
+      "type": "string",
+      "description": "Who made the last update"
+    }
+  },
+  "required": [
+    "zone",
+    "current_carts",
+    "max_capacity",
+    "reorder_point"
+  ]
+}

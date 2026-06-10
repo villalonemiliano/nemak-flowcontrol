@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { AlertTriangle, LayoutDashboard, LogOut, Zap } from "lucide-react";
+import { AlertTriangle, LayoutDashboard, LogOut, Zap, ShoppingCart, GitBranch, Factory } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 export default function Sidebar() {
@@ -8,6 +8,9 @@ export default function Sidebar() {
   const navItems = [
     { path: "/", icon: AlertTriangle, label: "Trigger Portal" },
     { path: "/dashboard", icon: LayoutDashboard, label: "Pipeline Dashboard" },
+    { path: "/inventario", icon: ShoppingCart, label: "Inventario VSM" },
+    { path: "/kanban", icon: GitBranch, label: "Zona Kanban" },
+    { path: "/sopladora1", icon: Factory, label: "Sopladora 1" },
   ];
 
   const isActive = (path) => location.pathname === path;

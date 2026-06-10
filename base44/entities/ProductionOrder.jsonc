@@ -1,0 +1,40 @@
+{
+  "name": "ProductionOrder",
+  "type": "object",
+  "properties": {
+    "requested_carts": {
+      "type": "number",
+      "description": "Number of carts requested from Sopladora 1"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_production",
+        "ready",
+        "delivered"
+      ],
+      "default": "pending",
+      "description": "Current production order status"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes for the production order"
+    },
+    "requested_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the order was requested"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the order was completed"
+    }
+  },
+  "required": [
+    "requested_carts",
+    "status",
+    "requested_at"
+  ]
+}

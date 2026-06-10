@@ -68,26 +68,34 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F2F2F7] p-4 sm:p-6 lg:p-8 pb-24 lg:pb-10">
+    <div className="min-h-screen relative overflow-hidden p-4 sm:p-6 lg:p-8 pb-24 lg:pb-10" style={{ background: "linear-gradient(135deg, #0A0F1E 0%, #0D1B3E 50%, #0A1628 100%)" }}>
+
+      {/* Ambient blobs */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-[-20%] right-[-5%] w-[500px] h-[500px] rounded-full opacity-15" style={{ background: "radial-gradient(circle, #FF3B30 0%, transparent 70%)" }} />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[400px] h-[400px] rounded-full opacity-10" style={{ background: "radial-gradient(circle, #002F6C 0%, transparent 70%)" }} />
+      </div>
 
       {/* Page Header */}
       <motion.div
         initial={{ opacity: 0, y: -6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.28 }}
-        className="flex items-start justify-between mb-5"
+        className="relative z-10 flex items-start justify-between mb-5"
       >
         <div>
-          <h1 className="text-[24px] font-bold text-[#1C1C1E] tracking-[-0.4px] leading-tight">
+          <p className="text-[11px] font-semibold text-white/30 uppercase tracking-[0.2em] mb-2">Alertas de Inventario</p>
+          <h1 className="text-[28px] font-black text-white tracking-[-0.4px] leading-tight">
             Inventory Alert Board
           </h1>
-          <p className="text-[13px] text-[#8E8E93] mt-0.5">
-            Drag cards to update the pipeline status.
+          <p className="text-[13px] text-white/40 mt-1">
+            Arrastra las tarjetas para actualizar el estado.
           </p>
         </div>
         <button
           onClick={() => setShowClearConfirm(true)}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold text-[#FF3B30] bg-[#FFF1F0] border border-[#FF3B30]/15 hover:bg-[#FFE2E1] transition-colors duration-150"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-semibold transition-colors duration-150"
+          style={{ background: "rgba(255,59,48,0.15)", border: "1px solid rgba(255,59,48,0.25)", color: "#FF3B30" }}
         >
           <Trash2 className="w-3.5 h-3.5" />
           Clear All
@@ -106,16 +114,16 @@ export default function Dashboard() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.96 }}
             transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-4 flex items-center gap-3 bg-white border border-[#E5E5EA] rounded-xl px-4 py-3"
-            style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.07)" }}
+            className="relative z-10 mb-4 flex items-center gap-3 rounded-xl px-4 py-3"
+            style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", backdropFilter: "blur(20px)" }}
           >
             <div className="w-2 h-2 rounded-full bg-[#30D158] animate-pulse shrink-0" />
-            <span className="text-[13px] font-medium text-[#1C1C1E]">
-              <span className="font-mono text-[#002F6C]">{lastMoved.part}</span>
+            <span className="text-[13px] font-medium text-white">
+              <span className="font-mono text-[#007AFF]">{lastMoved.part}</span>
               {" · "}
-              <span className="text-[#8E8E93]">{columnLabel[lastMoved.from]}</span>
-              <span className="text-[#C7C7CC] mx-1.5">→</span>
-              <span className="font-semibold">{columnLabel[lastMoved.to]}</span>
+              <span className="text-white/40">{columnLabel[lastMoved.from]}</span>
+              <span className="text-white/20 mx-1.5">→</span>
+              <span className="font-semibold text-white">{columnLabel[lastMoved.to]}</span>
             </span>
           </motion.div>
         )}
@@ -126,17 +134,22 @@ export default function Dashboard() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.1 }}
-        className="bg-white rounded-2xl border border-[#E5E5EA] p-5 sm:p-6"
-        style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}
+        className="relative z-10 rounded-3xl p-5 sm:p-6"
+        style={{
+          background: "linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          backdropFilter: "blur(40px)",
+          boxShadow: "0 32px 80px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08)",
+        }}
       >
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-[15px] font-semibold text-[#1C1C1E]">Alert Pipeline</h2>
-            <p className="text-[12px] text-[#8E8E93] mt-0.5">{triggers.length} total alerts</p>
+            <h2 className="text-[15px] font-semibold text-white">Alert Pipeline</h2>
+            <p className="text-[12px] text-white/40 mt-0.5">{triggers.length} total alerts</p>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full bg-[#30D158] animate-pulse" />
-            <span className="text-[11px] text-[#8E8E93] font-medium">Live</span>
+            <span className="text-[11px] text-white/40 font-medium">Live</span>
           </div>
         </div>
 
@@ -153,58 +166,23 @@ export default function Dashboard() {
       <AnimatePresence>
         {showClearConfirm && (
           <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-40"
-              onClick={() => !clearing && setShowClearConfirm(false)}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.94, y: 16 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.94, y: 16 }}
-              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-0 flex items-center justify-center z-50 px-4"
-            >
-              <div
-                className="bg-white rounded-2xl border border-[#E5E5EA] p-6 max-w-sm w-full"
-                style={{ boxShadow: "0 24px 64px rgba(0,0,0,0.14)" }}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-[#FFF1F0] flex items-center justify-center shrink-0">
-                    <AlertTriangle className="w-5 h-5 text-[#FF3B30]" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onClick={() => !clearing && setShowClearConfirm(false)} />
+            <motion.div initial={{ opacity: 0, scale: 0.92, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: 20 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="fixed inset-0 flex items-center justify-center z-50 px-4">
+              <div className="w-full max-w-sm rounded-3xl p-7" style={{ background: "linear-gradient(145deg, rgba(20,30,50,0.97) 0%, rgba(10,15,30,0.99) 100%)", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 40px 100px rgba(0,0,0,0.6)", backdropFilter: "blur(40px)" }}>
+                <div className="flex items-center gap-4 mb-5">
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "rgba(255,59,48,0.15)", border: "1px solid rgba(255,59,48,0.3)" }}>
+                    <AlertTriangle className="w-6 h-6 text-[#FF3B30]" />
                   </div>
                   <div>
-                    <p className="text-[15px] font-semibold text-[#1C1C1E]">Clear All Alerts?</p>
-                    <p className="text-[12px] text-[#8E8E93] mt-0.5">This will permanently delete all {triggers.length} alerts from the pipeline.</p>
+                    <p className="text-[16px] font-bold text-white">Clear All Alerts?</p>
+                    <p className="text-[12px] text-white/40 mt-0.5">Se eliminarán {triggers.length} alertas permanentemente.</p>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowClearConfirm(false)}
-                    disabled={clearing}
-                    className="flex-1 h-10 rounded-xl text-[13px] font-semibold bg-[#F2F2F7] text-[#1C1C1E] hover:bg-[#E5E5EA] transition-colors duration-150"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleClearAll}
-                    disabled={clearing}
-                    className="flex-1 h-10 rounded-xl text-[13px] font-semibold bg-[#FF3B30] text-white hover:bg-[#E0352A] transition-colors duration-150 flex items-center justify-center gap-2"
-                  >
-                    {clearing ? (
-                      <>
-                        <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Clearing...
-                      </>
-                    ) : (
-                      <>
-                        <Trash2 className="w-3.5 h-3.5" />
-                        Clear All
-                      </>
-                    )}
+                <div className="flex gap-3">
+                  <button onClick={() => setShowClearConfirm(false)} disabled={clearing} className="flex-1 h-11 rounded-2xl text-[13px] font-semibold text-white/50" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>Cancel</button>
+                  <button onClick={handleClearAll} disabled={clearing} className="flex-1 h-11 rounded-2xl text-[13px] font-bold flex items-center justify-center gap-2" style={{ background: "rgba(255,59,48,0.2)", border: "1px solid rgba(255,59,48,0.35)", color: "#FF3B30" }}>
+                    {clearing ? <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                    Clear All
                   </button>
                 </div>
               </div>

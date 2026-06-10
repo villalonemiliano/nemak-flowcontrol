@@ -1,29 +1,13 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertTriangle, Send, CheckCircle2, Zap, Package } from "lucide-react";
+import { AlertTriangle, Send, CheckCircle2, Package } from "lucide-react";
 
-const PRODUCTION_LINE = "Sopladora 25 Linea F";
-
-const partNumbers = [
-  "NMK-AL-4021",
-  "NMK-CY-7834",
-  "NMK-BL-1190",
-  "NMK-HD-5562",
-  "NMK-TR-3347",
-  "NMK-CR-8871",
-  "NMK-VL-2205",
-  "NMK-PS-6614",
-  "NMK-GK-9903",
-  "NMK-FL-4458",
-];
+const PRODUCTION_LINE = "Sopladora 25 Línea F";
+const PART_NUMBER     = "NMK-MISC-CART-001";
 
 export default function TriggerPortal() {
-  const [selectedPart, setSelectedPart] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const queryClient = useQueryClient();
 
@@ -32,25 +16,14 @@ export default function TriggerPortal() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["triggers"] });
       setSubmitted(true);
-      setTimeout(() => {
-        setSubmitted(false);
-        setSelectedPart("");
-      }, 3000);
-    },
-    onError: () => {
-      toast.error("Failed to activate alert. Please try again.");
+      setTimeout(() => setSubmitted(false), 4000);
     },
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!selectedPart) {
-      toast.error("Please select a missing part.");
-      return;
-    }
+  const handleTrigger = () => {
     createMutation.mutate({
       production_line: PRODUCTION_LINE,
-      part_number: selectedPart,
+      part_number: PART_NUMBER,
       criticality: "HIGH",
       status: "unassigned",
       triggered_at: new Date().toISOString(),
@@ -58,115 +31,125 @@ export default function TriggerPortal() {
   };
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8">
-      <div className="max-w-2xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-xl bg-[#002F6C]/10">
-              <AlertTriangle className="w-5 h-5 text-[#002F6C]" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-extrabold text-foreground tracking-tight">
-                Material Shortage Alert Portal
-              </h1>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                Log an active material shortage to notify the Supply Chain team immediately.
-              </p>
-            </div>
-          </div>
+    <div
+      className="min-h-screen relative overflow-hidden flex items-center justify-center p-6"
+      style={{ background: "linear-gradient(135deg, #0A0F1E 0%, #0D1B3E 50%, #0A1628 100%)" }}
+    >
+      {/* Ambient */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-15" style={{ background: "radial-gradient(circle, #FF3B30 0%, transparent 70%)" }} />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-15" style={{ background: "radial-gradient(circle, #002F6C 0%, transparent 70%)" }} />
+      </div>
+
+      <div className="relative z-10 w-full max-w-md">
+        {/* Header */}
+        <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
+          <p className="text-[11px] font-semibold text-white/30 uppercase tracking-[0.2em] mb-3">Material Shortage</p>
+          <h1 className="text-[32px] font-black text-white tracking-[-0.5px] leading-none mb-3">Alert Portal</h1>
+          <p className="text-[14px] text-white/40 leading-relaxed">
+            Notifica al equipo de Supply Chain de una escasez activa de material misceláneo.
+          </p>
         </motion.div>
 
         <AnimatePresence mode="wait">
           {submitted ? (
             <motion.div
               key="success"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-card border border-emerald-200 rounded-2xl p-10 text-center shadow-sm"
+              initial={{ opacity: 0, scale: 0.92, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: -16 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="rounded-3xl p-10 text-center"
+              style={{
+                background: "linear-gradient(145deg, rgba(48,209,88,0.1) 0%, rgba(48,209,88,0.04) 100%)",
+                border: "1px solid rgba(48,209,88,0.25)",
+                backdropFilter: "blur(40px)",
+                boxShadow: "0 32px 80px rgba(0,0,0,0.3), 0 0 60px rgba(48,209,88,0.1)",
+              }}
             >
-              <div className="inline-flex p-4 rounded-full bg-emerald-50 mb-4">
-                <CheckCircle2 className="w-10 h-10 text-emerald-600" />
-              </div>
-              <h2 className="text-xl font-bold text-foreground">Alert Activated Successfully</h2>
-              <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
-                The Supply Chain team has been notified. Timer is now active in the pipeline dashboard.
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.1, type: "spring", stiffness: 400, damping: 20 }}
+                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
+                style={{ background: "rgba(48,209,88,0.15)", border: "1px solid rgba(48,209,88,0.3)" }}
+              >
+                <CheckCircle2 className="w-8 h-8 text-[#30D158]" />
+              </motion.div>
+              <h2 className="text-[22px] font-bold text-white mb-2">Alerta Activada</h2>
+              <p className="text-[13px] text-white/50 leading-relaxed max-w-xs mx-auto">
+                El equipo de Supply Chain ha sido notificado. El temporizador está activo en el pipeline.
               </p>
-              <div className="flex items-center justify-center gap-2 mt-4 text-xs text-emerald-600 font-medium">
-                <Zap className="w-3.5 h-3.5" />
-                Timestamp recorded
-              </div>
             </motion.div>
           ) : (
-            <motion.form
+            <motion.div
               key="form"
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              onSubmit={handleSubmit}
-              className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden"
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="rounded-3xl overflow-hidden"
+              style={{
+                background: "linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                backdropFilter: "blur(40px)",
+                boxShadow: "0 32px 80px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1)",
+              }}
             >
-              <div className="p-6 sm:p-8 space-y-6">
-                {/* Production Line — fixed, read-only */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-foreground">
-                    Production Line / Area
-                  </Label>
-                  <div className="h-11 px-4 flex items-center rounded-xl bg-[#F2F2F7] border border-[#E5E5EA] text-[14px] font-medium text-[#3C3C43]">
-                    {PRODUCTION_LINE}
+              <div className="p-8">
+                {/* Material info */}
+                <div className="space-y-4 mb-8">
+                  <div className="rounded-2xl px-5 py-4" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                    <p className="text-[10px] text-white/30 uppercase tracking-[0.15em] mb-1.5">Línea de Producción</p>
+                    <p className="text-[15px] font-bold text-white">{PRODUCTION_LINE}</p>
+                  </div>
+
+                  <div className="rounded-2xl px-5 py-4" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                    <p className="text-[10px] text-white/30 uppercase tracking-[0.15em] mb-1.5">Material</p>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,59,48,0.15)", border: "1px solid rgba(255,59,48,0.25)" }}>
+                        <Package className="w-4 h-4 text-[#FF3B30]" />
+                      </div>
+                      <div>
+                        <p className="text-[15px] font-bold text-white font-mono">{PART_NUMBER}</p>
+                        <p className="text-[11px] text-white/30 mt-0.5">Carrito misceláneo</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl px-5 py-4 flex items-center gap-3" style={{ background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.2)" }}>
+                    <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                      <AlertTriangle className="w-4 h-4 text-[#FF3B30]" />
+                    </motion.div>
+                    <div>
+                      <p className="text-[12px] font-bold text-[#FF3B30]">Criticidad: ALTA</p>
+                      <p className="text-[10px] text-white/30 mt-0.5">Impacto directo en producción</p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Part number — button grid */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-semibold text-foreground">
-                    Missing Part / Component <span className="text-red-500">*</span>
-                  </Label>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {partNumbers.map((pn) => {
-                      const isSelected = selectedPart === pn;
-                      return (
-                        <motion.button
-                          key={pn}
-                          type="button"
-                          onClick={() => setSelectedPart(pn)}
-                          whileTap={{ scale: 0.96 }}
-                          transition={{ duration: 0.12, ease: [0.25, 1, 0.5, 1] }}
-                          className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border text-left text-[13px] font-semibold transition-all duration-150 ${
-                            isSelected
-                              ? "bg-[#002F6C] border-[#002F6C] text-white shadow-md"
-                              : "bg-white border-[#E5E5EA] text-[#1C1C1E] hover:border-[#002F6C] hover:bg-[#002F6C]/5"
-                          }`}
-                        >
-                          <Package className={`w-4 h-4 shrink-0 ${isSelected ? "text-white/80" : "text-[#8E8E93]"}`} />
-                          <span className="font-mono">{pn}</span>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              <div className="px-6 sm:px-8 py-5 bg-muted/50 border-t border-border">
-                <Button
-                  type="submit"
-                  disabled={createMutation.isPending || !selectedPart}
-                  className="w-full h-12 bg-[#002F6C] hover:bg-[#001F4C] text-white font-semibold text-sm tracking-wide rounded-xl shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-40"
+                {/* Trigger button */}
+                <motion.button
+                  onClick={handleTrigger}
+                  disabled={createMutation.isPending}
+                  whileTap={{ scale: 0.97 }}
+                  className="w-full h-14 rounded-2xl text-[15px] font-bold text-white flex items-center justify-center gap-3 transition-all duration-200 disabled:opacity-50"
+                  style={{
+                    background: "linear-gradient(135deg, #FF3B30 0%, #D70015 100%)",
+                    boxShadow: createMutation.isPending ? "none" : "0 8px 32px rgba(255,59,48,0.4), inset 0 1px 0 rgba(255,255,255,0.15)",
+                  }}
                 >
                   {createMutation.isPending ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Processing...
-                    </div>
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <Send className="w-4 h-4" />
-                      {"Activate Alert & Notify Supply Chain"}
-                    </div>
+                    <>
+                      <Send className="w-5 h-5" />
+                      Activar Alerta de Escasez
+                    </>
                   )}
-                </Button>
+                </motion.button>
               </div>
-            </motion.form>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>

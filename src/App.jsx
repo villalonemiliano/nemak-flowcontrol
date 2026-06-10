@@ -15,6 +15,9 @@ import ResetPassword from '@/pages/ResetPassword';
 import AppLayout from '@/components/layout/AppLayout';
 import TriggerPortal from '@/pages/TriggerPortal';
 import Dashboard from '@/pages/Dashboard';
+import Inventario from '@/pages/Inventario';
+import ZonaKanban from '@/pages/ZonaKanban';
+import Sopladora1 from '@/pages/Sopladora1';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -47,6 +50,9 @@ const AuthenticatedApp = () => {
         <Route element={<AppLayout />}>
           <Route path="/" element={<TriggerPortal />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/inventario" element={<Inventario />} />
+          <Route path="/kanban" element={<ZonaKanban />} />
+          <Route path="/sopladora1" element={<Sopladora1 />} />
         </Route>
       </Route>
 

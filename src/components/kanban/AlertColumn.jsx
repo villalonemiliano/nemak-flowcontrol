@@ -37,7 +37,7 @@ export default function AlertColumn({ columnId, triggers, index }) {
       <div className="px-1 mb-3">
         <div className="flex items-center gap-2 mb-0.5">
           <div className={`w-2 h-2 rounded-full ${cfg.accentClass}`} />
-          <h3 className="text-[14px] font-semibold text-[#1C1C1E] tracking-[-0.1px]">
+          <h3 className="text-[14px] font-semibold text-white tracking-[-0.1px]">
             {cfg.title}
           </h3>
           <motion.span
@@ -45,12 +45,13 @@ export default function AlertColumn({ columnId, triggers, index }) {
             initial={{ scale: 1.3 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="ml-auto min-w-[20px] h-5 flex items-center justify-center rounded-full bg-[#F2F2F7] text-[11px] font-bold text-[#3C3C43] px-1.5"
+            className="ml-auto min-w-[20px] h-5 flex items-center justify-center rounded-full text-[11px] font-bold px-1.5"
+            style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}
           >
             {triggers.length}
           </motion.span>
         </div>
-        <p className="text-[11px] text-[#8E8E93] pl-4">{cfg.subtitle}</p>
+        <p className="text-[11px] text-white/30 pl-4">{cfg.subtitle}</p>
       </div>
 
       {/* Divider accent */}
@@ -66,14 +67,14 @@ export default function AlertColumn({ columnId, triggers, index }) {
             {...provided.droppableProps}
             className="flex-1 rounded-xl min-h-[280px] p-2 space-y-2"
             style={{
-              backgroundColor: snapshot.isDraggingOver ? "#EBEBF0" : "rgba(242,242,247,0.5)",
-              outline: snapshot.isDraggingOver ? `2px dashed ${cfg.accentColor}44` : "2px solid transparent",
+              backgroundColor: snapshot.isDraggingOver ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.02)",
+              outline: snapshot.isDraggingOver ? `2px dashed ${cfg.accentColor}55` : "2px solid transparent",
               transition: "background-color 0.2s ease, outline 0.2s ease",
             }}
           >
             {triggers.length === 0 && !snapshot.isDraggingOver && (
               <div className="flex items-center justify-center h-28">
-                <p className="text-[12px] text-[#C7C7CC]">No items</p>
+                <p className="text-[12px] text-white/20">No items</p>
               </div>
             )}
 
