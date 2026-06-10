@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, AlertTriangle, Clock, Bell, CheckCircle2, ShoppingCart, Send, RefreshCw, Plus, Minus } from "lucide-react";
+import { Trash2, AlertTriangle, Clock, Bell, CheckCircle2, ShoppingCart, Send, RefreshCw, Plus, Minus, Package } from "lucide-react";
 import AlertKPIBar from "@/components/kanban/AlertKPIBar";
 
 const ease = [0.25, 0.1, 0.25, 1];
@@ -186,7 +186,13 @@ export default function Kanban() {
     refetchInterval: 6000,
   });
 
-  const kanbanInv = inventories.find((i) => i.zone === "kanban");
+  const kanbanInv    = inventories.find((i) => i.zone === "kanban");
+  const { data: orders = [] } = useQuery({
+    queryKey: ["productionOrders"],
+    queryFn: () => base44.entities.ProductionOrder.list("-requested_at", 50),
+    refetchInterval: 5000,
+  });
+  const shippedOrders = orders.filter((o) => o.status === "shipped");
 
   const updateTrigger = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Trigger.update(id, data),
@@ -196,6 +202,25 @@ export default function Kanban() {
     mutationFn: ({ id, data }) => base44.entities.CartInventory.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["cartInventory"] }),
   });
+  const updateOrder = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.ProductionOrder.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["productionOrders"] });
+      queryClient.invalidateQueries({ queryKey: ["cartInventory"] });
+    },
+  });
+  const [confirmingOrderId, setConfirmingOrderId] = useState(null);
+
+  const handleConfirmReceived = async (order) => {
+    setConfirmingOrderId(order.id);
+    // Incrementar inventario Kanban
+    if (kanbanInv) {
+      const newCount = Math.min(kanbanInv.current_carts + order.requested_carts, kanbanInv.max_capacity);
+      await updateKanban.mutateAsync({ id: kanbanInv.id, data: { current_carts: newCount } });
+    }
+    await updateOrder.mutateAsync({ id: order.id, data: { status: "delivered", completed_at: new Date().toISOString() } });
+    setConfirmingOrderId(null);
+  };
 
   const shownRef = useRef(false);
   useEffect(() => {
@@ -283,43 +308,62 @@ export default function Kanban() {
             <motion.div initial={{ opacity: 0, scale: 0.93, y: 24 }} animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.93, y: 24 }} transition={{ duration: 0.24, ease }}
               className="fixed inset-0 z-50 flex items-center justify-center px-5">
-              <div style={{ width: "100%", maxWidth: 360, background: "#FFFFFF", borderRadius: 14, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
-                <div style={{ background: "rgba(255,59,48,0.08)", borderBottom: "1px solid rgba(255,59,48,0.16)", padding: "32px 24px 24px", textAlign: "center" }}>
-                  <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 1.4, repeat: Infinity }}
-                    style={{ width: 56, height: 56, borderRadius: 9999, background: "rgba(255,59,48,0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
-                    <Bell size={24} style={{ color: "#FF3B30" }} />
-                  </motion.div>
-                  <h2 style={{ fontSize: 17, fontWeight: 500, color: "#1D1D1F", margin: "0 0 6px" }}>Nueva Alerta de Escasez</h2>
-                  <p style={{ fontSize: 15, color: "#6E6E73", margin: 0 }}>Se ha activado una solicitud de material</p>
-                </div>
-                <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
-                  {[
-                    { label: "Línea",    value: newTriggerAlert.production_line, mono: false },
-                    { label: "Material", value: newTriggerAlert.part_number,     mono: true },
-                    { label: "Hora",     value: new Date(newTriggerAlert.triggered_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" }), mono: true },
-                  ].map((row) => (
-                    <div key={row.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73" }}>{row.label}</span>
-                      <span style={{ fontSize: row.mono ? 13 : 15, fontFamily: row.mono ? "'SF Mono','JetBrains Mono',monospace" : "inherit", color: row.mono ? "#0071E3" : "#1D1D1F" }}>
-                        {row.value}
-                      </span>
+              <div style={{ width: "100%", maxWidth: 420, background: "#FFFFFF", borderRadius: 14, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,0.24)" }}>
+                {/* Barra animada roja */}
+                <motion.div
+                  animate={{ scaleX: [1, 0.96, 1] }}
+                  transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ height: 4, background: "linear-gradient(90deg, #FF3B30, #FF6B00)", transformOrigin: "left" }}
+                />
+                <div style={{ padding: "36px 32px 28px", textAlign: "center" }}>
+                  {/* Icono con doble pulso */}
+                  <div style={{ position: "relative", display: "inline-flex", marginBottom: 24 }}>
+                    <motion.div
+                      animate={{ scale: [1, 1.7, 1], opacity: [0.35, 0, 0.35] }}
+                      transition={{ duration: 1.4, repeat: Infinity, ease: "easeOut" }}
+                      style={{ position: "absolute", inset: 0, borderRadius: 9999, background: "rgba(255,59,48,0.18)" }}
+                    />
+                    <motion.div
+                      animate={{ scale: [1, 1.35, 1], opacity: [0.55, 0, 0.55] }}
+                      transition={{ duration: 1.4, repeat: Infinity, ease: "easeOut", delay: 0.25 }}
+                      style={{ position: "absolute", inset: 0, borderRadius: 9999, background: "rgba(255,59,48,0.14)" }}
+                    />
+                    <div style={{ width: 72, height: 72, borderRadius: 9999, background: "rgba(255,59,48,0.10)", border: "2px solid rgba(255,59,48,0.25)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+                      <Bell size={28} style={{ color: "#FF3B30" }} />
                     </div>
-                  ))}
+                  </div>
+                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#FF3B30", marginBottom: 10 }}>
+                    ALERTA DE ESCASEZ
+                  </p>
+                  <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.03em", color: "#1D1D1F", margin: "0 0 8px", lineHeight: 1.1 }}>
+                    Nueva Alerta<br />de Material
+                  </h2>
+                  <p style={{ fontSize: 15, color: "#6E6E73", margin: 0 }}>Se ha activado una solicitud desde producción</p>
+                </div>
+                <div style={{ margin: "0 32px", borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: 20, paddingBottom: 20, display: "flex", flexDirection: "column", gap: 12 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73" }}>Criticidad</span>
-                    <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.20)", color: "#FF3B30", borderRadius: 6, padding: "3px 10px" }}>
-                      HIGH
+                    <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#86868B" }}>Línea</span>
+                    <span style={{ fontSize: 14, fontWeight: 500, color: "#1D1D1F" }}>{newTriggerAlert.production_line}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#86868B" }}>Material</span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: "#1D1D1F" }}>{newTriggerAlert.part_number}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#86868B" }}>Hora</span>
+                    <span style={{ fontSize: 13, fontFamily: "'SF Mono','JetBrains Mono',monospace", color: "#1D1D1F" }}>
+                      {new Date(newTriggerAlert.triggered_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                     </span>
                   </div>
                 </div>
-                <div style={{ padding: "0 24px 24px" }}>
-                  <button onClick={handleAlertOK}
-                    style={{ width: "100%", height: 48, borderRadius: 10, background: "#1D1D1F", color: "#FFFFFF", fontSize: 15, fontWeight: 500, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "background 150ms ease" }}
+                <div style={{ padding: "0 32px 32px" }}>
+                  <motion.button onClick={handleAlertOK} whileTap={{ scale: 0.97 }}
+                    style={{ width: "100%", height: 52, borderRadius: 10, background: "#1D1D1F", color: "#FFFFFF", fontSize: 15, fontWeight: 600, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, letterSpacing: "-0.01em" }}
                     onMouseEnter={e => e.currentTarget.style.background = "#2D2D2F"}
                     onMouseLeave={e => e.currentTarget.style.background = "#1D1D1F"}>
                     <CheckCircle2 size={16} />
-                    OK — Entendido, tomando atención
-                  </button>
+                    Atender — Tomando acción
+                  </motion.button>
                 </div>
               </div>
             </motion.div>
@@ -391,6 +435,49 @@ export default function Kanban() {
           </div>
         </DragDropContext>
       </div>
+
+      {/* ── Envíos pendientes de confirmar ── */}
+      <AnimatePresence>
+        {shippedOrders.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.24, ease }}
+            style={{ padding: "32px 40px 0" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+              <motion.div style={{ width: 8, height: 8, borderRadius: 9999, background: "#6366F1" }}
+                animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.4, repeat: Infinity }} />
+              <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73", margin: 0 }}>
+                Envíos pendientes de recibir
+              </p>
+              <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 600, color: "#6366F1", background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.20)", borderRadius: 9999, padding: "1px 8px" }}>
+                {shippedOrders.length}
+              </span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {shippedOrders.map((order) => (
+                <div key={order.id} style={{ border: "1px solid rgba(99,102,241,0.20)", borderLeft: "3px solid #6366F1", borderRadius: "0 10px 10px 0", padding: "14px 16px", background: "rgba(99,102,241,0.04)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                  <div>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: "#1D1D1F", margin: 0 }}>
+                      {order.requested_carts} carrito{order.requested_carts !== 1 ? "s" : ""} de Sopladora 12 Línea C
+                    </p>
+                    <p style={{ fontSize: 12, fontFamily: "'SF Mono','JetBrains Mono',monospace", color: "#86868B", marginTop: 4 }}>
+                      Enviado · {new Date(order.requested_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleConfirmReceived(order)}
+                    disabled={confirmingOrderId === order.id}
+                    style={{ flexShrink: 0, height: 36, padding: "0 16px", borderRadius: 10, background: "#1D1D1F", color: "white", fontSize: 13, fontWeight: 500, border: "none", cursor: confirmingOrderId === order.id ? "not-allowed" : "pointer", opacity: confirmingOrderId === order.id ? 0.4 : 1, display: "flex", alignItems: "center", gap: 6, transition: "background 120ms ease" }}
+                    onMouseEnter={e => { if (confirmingOrderId !== order.id) e.currentTarget.style.background = "#2D2D2F"; }}
+                    onMouseLeave={e => e.currentTarget.style.background = "#1D1D1F"}
+                  >
+                    {confirmingOrderId === order.id ? <RefreshCw size={13} style={{ animation: "spin 0.7s linear infinite" }} /> : <CheckCircle2 size={13} />}
+                    Confirmar recibido
+                  </button>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Kanban Stock ── */}
       <div style={{ padding: "40px 40px 0" }}>
@@ -521,7 +608,7 @@ export default function Kanban() {
               <div style={{ width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 14, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.15)" }}>
                 <div style={{ padding: "24px 24px 20px", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
                   <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73", marginBottom: 6 }}>Solicitud de Producción</p>
-                  <h3 style={{ fontSize: 17, fontWeight: 500, color: "#1D1D1F", margin: 0 }}>Pedir carritos a Sopladora 1</h3>
+                  <h3 style={{ fontSize: 17, fontWeight: 500, color: "#1D1D1F", margin: 0 }}>Pedir carritos a Sopladora 12 Línea C</h3>
                 </div>
                 <div style={{ padding: "20px 24px" }}>
                   <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73", marginBottom: 10 }}>Cantidad de carritos</p>
@@ -537,7 +624,7 @@ export default function Kanban() {
                     </button>
                   </div>
                   <p style={{ fontSize: 12, color: "#86868B", marginTop: 8 }}>
-                    Zona Kanban tiene {current} de {max} carritos actualmente.
+                    Stock actual: {current} de {max} carritos.
                   </p>
                 </div>
                 <div style={{ padding: "0 24px 24px", display: "flex", gap: 8 }}>

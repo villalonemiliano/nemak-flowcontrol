@@ -217,7 +217,7 @@ export default function Inventario() {
 
       {/* VSM flow */}
       <div style={{ padding: "24px 40px 0", display: "flex", alignItems: "center", gap: 12 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "#AEAEB2", textTransform: "uppercase", whiteSpace: "nowrap" }}>Sopladora 25</span>
+        <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "#AEAEB2", textTransform: "uppercase", whiteSpace: "nowrap" }}>Sopladora 3 Línea H2</span>
         <div style={{ flex: 1, height: 1, background: "rgba(0,0,0,0.08)" }} />
         <span style={{ fontSize: 11, color: "#AEAEB2" }}>→</span>
         <div style={{ flex: 1, height: 1, background: "rgba(0,0,0,0.08)" }} />
@@ -227,7 +227,7 @@ export default function Inventario() {
       {/* Zone cards */}
       <div style={{ padding: "24px 40px 0", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
         <ZoneCard
-          title="Sopladora 25 — Línea F"
+          title="Sopladora 3 — Línea H2"
           subtitle="Cap. 3 carritos · Reorden: 1"
           inventory={sopladoraInv}
           onDecrease={() => adjust(sopladoraInv, -1)}

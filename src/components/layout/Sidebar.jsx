@@ -11,7 +11,7 @@ export default function Sidebar() {
     { path: "/",           icon: AlertTriangle,   label: "Trigger Portal" },
     { path: "/kanban",     icon: LayoutDashboard, label: "Kanban" },
     { path: "/inventario", icon: ShoppingCart,    label: "Inventario" },
-    { path: "/sopladora1", icon: Factory,         label: "Sopladora 1" },
+    { path: "/sopladora1", icon: Factory,         label: "Sopladora 12 Línea C" },
   ];
 
   const isActive = (path) => location.pathname === path;

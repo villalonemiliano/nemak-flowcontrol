@@ -32,7 +32,7 @@ export default function MobileNav() {
           { path: "/",           icon: AlertTriangle,   label: "Alerta" },
           { path: "/kanban",     icon: LayoutDashboard, label: "Kanban" },
           { path: "/inventario", icon: ShoppingCart,    label: "Inventario" },
-          { path: "/sopladora1", icon: Factory,         label: "Sopladora" },
+          { path: "/sopladora1", icon: Factory,         label: "Sop. 12C" },
         ].map((item) => {
           const active = isActive(item.path);
           return (

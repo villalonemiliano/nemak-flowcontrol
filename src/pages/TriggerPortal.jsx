@@ -4,8 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, Send, CheckCircle2, Package, Activity } from "lucide-react";
 
-const PRODUCTION_LINE = "Sopladora 25 Línea F";
-const PART_NUMBER = "NMK-MISC-CART-001";
+const PRODUCTION_LINE = "Sopladora 3 Línea H2";
+const PART_NUMBER = "Carrito Misceláneo: WATER JACKET";
 
 const ease = [0.25, 0.1, 0.25, 1];
 
@@ -129,7 +129,7 @@ export default function TriggerPortal() {
               </motion.div>
               <h2 style={{ fontSize: 17, fontWeight: 500, color: "#1D1D1F", margin: "0 0 8px" }}>Alerta Activada</h2>
               <p style={{ fontSize: 15, color: "#6E6E73", maxWidth: 280, margin: "0 auto", lineHeight: 1.5 }}>
-                El equipo de Supply Chain ha sido notificado. El temporizador está activo en el pipeline.
+                El equipo de Supply Chain ha sido notificado.
               </p>
             </motion.div>
           ) : (
@@ -158,21 +158,9 @@ export default function TriggerPortal() {
                     <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "#6E6E73", textTransform: "uppercase", marginBottom: 4 }}>
                       Material
                     </p>
-                    <p style={{ fontSize: 13, fontWeight: 500, fontFamily: "'SF Mono','JetBrains Mono',monospace", color: "#0071E3", margin: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 500, color: "#1D1D1F", margin: 0 }}>
                       {PART_NUMBER}
                     </p>
-                    <p style={{ fontSize: 12, color: "#86868B", marginTop: 2 }}>Carrito misceláneo</p>
-                  </div>
-                </div>
-
-                {/* Criticality */}
-                <div style={{ background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.15)", borderLeft: "3px solid #FF3B30", borderRadius: "0 14px 14px 0", padding: "14px 20px", display: "flex", alignItems: "center", gap: 12 }}>
-                  <motion.div animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 1.6, repeat: Infinity }}>
-                    <AlertTriangle size={16} style={{ color: "#FF3B30", flexShrink: 0 }} />
-                  </motion.div>
-                  <div>
-                    <p style={{ fontSize: 13, fontWeight: 500, color: "#7A1010", margin: 0 }}>Criticidad: ALTA</p>
-                    <p style={{ fontSize: 12, color: "#86868B", marginTop: 2 }}>Impacto directo en producción</p>
                   </div>
                 </div>
               </div>

@@ -19,11 +19,13 @@ const statusCfg = {
   pending:       { label: "Pendiente",   color: "#FF9F0A", bg: "rgba(255,159,10,0.08)",  border: "rgba(255,159,10,0.20)", icon: Clock },
   in_production: { label: "Produciendo", color: "#0071E3", bg: "rgba(0,113,227,0.08)",   border: "rgba(0,113,227,0.20)", icon: Play },
   ready:         { label: "Listo",       color: "#34C759", bg: "rgba(52,199,89,0.08)",   border: "rgba(52,199,89,0.20)", icon: CheckCircle2 },
-  delivered:     { label: "Entregado",   color: "#AEAEB2", bg: "rgba(174,174,178,0.08)", border: "rgba(174,174,178,0.20)", icon: Package },
+  shipped:       { label: "Enviado",     color: "#6366F1", bg: "rgba(99,102,241,0.08)",  border: "rgba(99,102,241,0.20)", icon: Package },
+  delivered:     { label: "Recibido",    color: "#AEAEB2", bg: "rgba(174,174,178,0.08)", border: "rgba(174,174,178,0.20)", icon: Package },
 };
 
-const nextStatusMap = { pending: "in_production", in_production: "ready", ready: "delivered" };
-const nextLabelMap  = { pending: "Iniciar producción", in_production: "Marcar listo", ready: "Confirmar entrega" };
+// Sopladora 12 solo avanza hasta "shipped" (enviado). Kanban confirma recibido.
+const nextStatusMap  = { pending: "in_production", in_production: "ready", ready: "shipped" };
+const nextLabelMap   = { pending: "Iniciar producción", in_production: "Marcar listo", ready: "Marcar enviado" };
 
 function OrderCard({ order, onAdvance, isAdvancing }) {
   const cfg = statusCfg[order.status] || statusCfg.pending;
@@ -40,7 +42,7 @@ function OrderCard({ order, onAdvance, isAdvancing }) {
         border: `1px solid ${cfg.border}`,
         borderLeft: `3px solid ${cfg.color}`,
         borderRadius: "0 10px 10px 0",
-        padding: "16px 16px 16px 16px",
+        padding: "16px",
         marginBottom: 8,
       }}
     >
@@ -115,11 +117,6 @@ export default function Sopladora1() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["productionOrders"] }),
   });
 
-  const updateInventoryMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.CartInventory.update(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["cartInventory"] }),
-  });
-
   useEffect(() => {
     if (shownRef.current || orders.length === 0) return;
     const seen = getSeenOrders();
@@ -136,14 +133,7 @@ export default function Sopladora1() {
   const handleAdvance = async (order, nextStatus) => {
     setAdvancingId(order.id);
     const updateData = { status: nextStatus };
-    if (nextStatus === "delivered") {
-      updateData.completed_at = new Date().toISOString();
-      // Incrementar stock de Kanban al confirmar entrega
-      if (kanbanInv) {
-        const newCount = Math.min(kanbanInv.current_carts + order.requested_carts, kanbanInv.max_capacity);
-        await updateInventoryMutation.mutateAsync({ id: kanbanInv.id, data: { current_carts: newCount } });
-      }
-    }
+    // Solo Kanban confirma recibido — aquí solo marcamos "shipped"
     await advanceMutation.mutateAsync({ id: order.id, data: updateData });
     setAdvancingId(null);
   };
@@ -151,15 +141,15 @@ export default function Sopladora1() {
   const pending      = orders.filter((o) => o.status === "pending");
   const inProduction = orders.filter((o) => o.status === "in_production");
   const ready        = orders.filter((o) => o.status === "ready");
-  const delivered    = orders.filter((o) => o.status === "delivered").slice(0, 5);
+  const shipped      = orders.filter((o) => o.status === "shipped").slice(0, 5);
   const urgentCount  = pending.length + inProduction.length;
   const kanbanIsLow  = kanbanInv && kanbanInv.current_carts <= kanbanInv.reorder_point;
 
   const kpis = [
-    { label: "Solicitudes", value: pending.length, color: "#FF9F0A", icon: Clock },
+    { label: "Solicitudes", value: pending.length,      color: "#FF9F0A", icon: Clock },
     { label: "Produciendo", value: inProduction.length, color: "#0071E3", icon: Factory },
-    { label: "Listos",      value: ready.length, color: "#34C759", icon: CheckCircle2 },
-    { label: "Entregados",  value: orders.filter(o => o.status === "delivered").length, color: "#AEAEB2", icon: Package },
+    { label: "Listos",      value: ready.length,        color: "#34C759", icon: CheckCircle2 },
+    { label: "Enviados",    value: orders.filter(o => o.status === "shipped" || o.status === "delivered").length, color: "#6366F1", icon: Package },
   ];
 
   return (
@@ -174,50 +164,69 @@ export default function Sopladora1() {
             <motion.div initial={{ opacity: 0, scale: 0.93, y: 24 }} animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.93, y: 24 }} transition={{ duration: 0.24, ease }}
               className="fixed inset-0 z-50 flex items-center justify-center px-5">
-              <div style={{ width: "100%", maxWidth: 360, background: "#FFFFFF", borderRadius: 14, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
-                <div style={{ background: "rgba(255,159,10,0.08)", borderBottom: "1px solid rgba(255,159,10,0.16)", padding: "32px 24px 24px", textAlign: "center" }}>
-                  <motion.div
-                    animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 1.4, repeat: Infinity }}
-                    style={{ width: 56, height: 56, borderRadius: 9999, background: "rgba(255,159,10,0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}
-                  >
-                    <Bell size={24} style={{ color: "#FF9F0A" }} />
-                  </motion.div>
-                  <h2 style={{ fontSize: 17, fontWeight: 500, color: "#1D1D1F", margin: "0 0 6px" }}>Nueva Solicitud de Carritos</h2>
-                  <p style={{ fontSize: 15, color: "#6E6E73", margin: 0 }}>La Zona Kanban requiere producción</p>
-                </div>
-                <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73" }}>Carritos solicitados</span>
-                    <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em", color: "#1D1D1F", fontVariantNumeric: "tabular-nums" }}>{pendingOrderAlert.requested_carts}</span>
+              <div style={{ width: "100%", maxWidth: 400, background: "#FFFFFF", borderRadius: 14, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,0.22)" }}>
+                {/* Barra de alerta animada */}
+                <motion.div
+                  animate={{ scaleX: [1, 0.97, 1] }}
+                  transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ height: 4, background: "linear-gradient(90deg, #FF9F0A, #FF6B00)", transformOrigin: "left" }}
+                />
+                <div style={{ padding: "36px 32px 28px", textAlign: "center" }}>
+                  {/* Icono con pulso doble */}
+                  <div style={{ position: "relative", display: "inline-flex", marginBottom: 24 }}>
+                    <motion.div
+                      animate={{ scale: [1, 1.6, 1], opacity: [0.4, 0, 0.4] }}
+                      transition={{ duration: 1.6, repeat: Infinity, ease: "easeOut" }}
+                      style={{ position: "absolute", inset: 0, borderRadius: 9999, background: "rgba(255,159,10,0.20)" }}
+                    />
+                    <motion.div
+                      animate={{ scale: [1, 1.3, 1], opacity: [0.6, 0, 0.6] }}
+                      transition={{ duration: 1.6, repeat: Infinity, ease: "easeOut", delay: 0.3 }}
+                      style={{ position: "absolute", inset: 0, borderRadius: 9999, background: "rgba(255,159,10,0.15)" }}
+                    />
+                    <div style={{ width: 72, height: 72, borderRadius: 9999, background: "rgba(255,159,10,0.12)", border: "2px solid rgba(255,159,10,0.30)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+                      <Bell size={28} style={{ color: "#FF9F0A" }} />
+                    </div>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73" }}>Hora de solicitud</span>
-                    <span style={{ fontSize: 12, fontFamily: "'SF Mono','JetBrains Mono',monospace", color: "#86868B" }}>
+
+                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#FF9F0A", marginBottom: 10 }}>
+                    SOLICITUD ENTRANTE
+                  </p>
+                  <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.03em", color: "#1D1D1F", margin: "0 0 8px", lineHeight: 1.1 }}>
+                    Nueva Solicitud<br />de Carritos
+                  </h2>
+                  <p style={{ fontSize: 15, color: "#6E6E73", margin: 0 }}>La Zona Kanban requiere producción inmediata</p>
+                </div>
+
+                <div style={{ margin: "0 32px", borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: 20, paddingBottom: 20, display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#86868B" }}>Carritos solicitados</span>
+                    <span style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.04em", color: "#1D1D1F", fontVariantNumeric: "tabular-nums" }}>{pendingOrderAlert.requested_carts}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#86868B" }}>Hora de solicitud</span>
+                    <span style={{ fontSize: 13, fontFamily: "'SF Mono','JetBrains Mono',monospace", color: "#1D1D1F" }}>
                       {new Date(pendingOrderAlert.requested_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                     </span>
                   </div>
                   {pendingOrderAlert.notes && (
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
-                      <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73", flexShrink: 0 }}>Nota</span>
-                      <span style={{ fontSize: 12, color: "#86868B", textAlign: "right" }}>{pendingOrderAlert.notes}</span>
+                    <div style={{ background: "rgba(0,0,0,0.03)", borderRadius: 10, padding: "10px 14px" }}>
+                      <span style={{ fontSize: 12, color: "#86868B" }}>{pendingOrderAlert.notes}</span>
                     </div>
                   )}
                 </div>
-                <div style={{ padding: "0 24px 24px" }}>
-                  <button
+
+                <div style={{ padding: "0 32px 32px" }}>
+                  <motion.button
                     onClick={handleOrderAlertOK}
-                    style={{
-                      width: "100%", height: 48, borderRadius: 10, background: "#1D1D1F",
-                      color: "#FFFFFF", fontSize: 15, fontWeight: 500, border: "none", cursor: "pointer",
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                      transition: "background 150ms ease",
-                    }}
+                    whileTap={{ scale: 0.97 }}
+                    style={{ width: "100%", height: 52, borderRadius: 10, background: "#1D1D1F", color: "#FFFFFF", fontSize: 15, fontWeight: 600, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, letterSpacing: "-0.01em" }}
                     onMouseEnter={e => e.currentTarget.style.background = "#2D2D2F"}
                     onMouseLeave={e => e.currentTarget.style.background = "#1D1D1F"}
                   >
                     <CheckCircle2 size={16} />
-                    OK — Solicitud recibida
-                  </button>
+                    Confirmar — Solicitud recibida
+                  </motion.button>
                 </div>
               </div>
             </motion.div>
@@ -232,7 +241,7 @@ export default function Sopladora1() {
         </p>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h1 style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em", color: "#1D1D1F", margin: 0 }}>
-            Sopladora 1
+            Sopladora 12 Línea C
           </h1>
           <div style={{
             display: "flex", alignItems: "center", gap: 6,
@@ -304,16 +313,15 @@ export default function Sopladora1() {
           { title: "Por producir",  orders: pending,      color: "#FF9F0A" },
           { title: "En producción", orders: inProduction, color: "#0071E3" },
           { title: "Listos",        orders: ready,        color: "#34C759" },
-          { title: "Entregados",    orders: delivered,    color: "#AEAEB2" },
+          { title: "Enviados",      orders: shipped,      color: "#6366F1" },
         ].map((col) => (
           <div key={col.title}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
               <div style={{ width: 8, height: 8, borderRadius: 9999, background: col.color, flexShrink: 0 }} />
               <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73", margin: 0 }}>{col.title}</p>
-              <span style={{
-                marginLeft: "auto", fontSize: 11, fontWeight: 600, color: "#86868B",
-                background: "rgba(0,0,0,0.04)", borderRadius: 9999, padding: "1px 8px",
-              }}>{col.orders.length}</span>
+              <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 600, color: "#86868B", background: "rgba(0,0,0,0.04)", borderRadius: 9999, padding: "1px 8px" }}>
+                {col.orders.length}
+              </span>
             </div>
             <AnimatePresence>
               {col.orders.length === 0 ? (
