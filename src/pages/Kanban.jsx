@@ -299,75 +299,112 @@ export default function Kanban() {
   return (
     <div className="min-h-screen pb-24 lg:pb-10" style={{ background: "#FFFFFF" }}>
 
-      {/* ── New Trigger Alert Modal ── */}
+      {/* ── New Trigger Alert Modal ── INMERSIVO */}
       <AnimatePresence>
         {newTriggerAlert && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50" style={{ background: "rgba(0,0,0,0.40)", backdropFilter: "blur(12px)" }} />
-            <motion.div initial={{ opacity: 0, scale: 0.93, y: 24 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.93, y: 24 }} transition={{ duration: 0.24, ease }}
-              className="fixed inset-0 z-50 flex items-center justify-center px-5">
-              <div style={{ width: "100%", maxWidth: 420, background: "#FFFFFF", borderRadius: 14, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,0.24)" }}>
-                {/* Barra animada roja */}
-                <motion.div
-                  animate={{ scaleX: [1, 0.96, 1] }}
-                  transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
-                  style={{ height: 4, background: "linear-gradient(90deg, #FF3B30, #FF6B00)", transformOrigin: "left" }}
-                />
-                <div style={{ padding: "36px 32px 28px", textAlign: "center" }}>
-                  {/* Icono con doble pulso */}
-                  <div style={{ position: "relative", display: "inline-flex", marginBottom: 24 }}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center px-5"
+            style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(6px)" }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.90, y: 32 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.90, y: 32 }}
+              transition={{ duration: 0.30, ease: [0.16, 1, 0.3, 1] }}
+              style={{
+                width: "100%",
+                maxWidth: 440,
+                borderRadius: 20,
+                overflow: "hidden",
+                background: "linear-gradient(145deg, #c0392b 0%, #922b21 40%, #7b241c 100%)",
+                boxShadow: "0 0 0 1.5px rgba(255,80,60,0.55), 0 0 40px rgba(255,59,48,0.40), 0 40px 80px rgba(0,0,0,0.50)",
+                willChange: "transform, opacity",
+                animation: "neonFlicker 4s infinite",
+              }}
+            >
+              {/* Top accent bar */}
+              <motion.div
+                animate={{ opacity: [1, 0.6, 1, 0.8, 1] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
+                style={{ height: 3, background: "linear-gradient(90deg, #FF6B35, #FF3B30, #FF8C00)", willChange: "opacity" }}
+              />
+
+              <div style={{ padding: "36px 32px 28px" }}>
+                {/* Icon row */}
+                <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28 }}>
+                  <div style={{ position: "relative", flexShrink: 0 }}>
                     <motion.div
-                      animate={{ scale: [1, 1.7, 1], opacity: [0.35, 0, 0.35] }}
-                      transition={{ duration: 1.4, repeat: Infinity, ease: "easeOut" }}
-                      style={{ position: "absolute", inset: 0, borderRadius: 9999, background: "rgba(255,59,48,0.18)" }}
+                      animate={{ scale: [1, 1.9, 1], opacity: [0.5, 0, 0.5] }}
+                      transition={{ duration: 1.6, repeat: Infinity, ease: "easeOut" }}
+                      style={{ position: "absolute", inset: -8, borderRadius: 9999, background: "rgba(255,200,100,0.25)", willChange: "transform, opacity" }}
                     />
                     <motion.div
-                      animate={{ scale: [1, 1.35, 1], opacity: [0.55, 0, 0.55] }}
-                      transition={{ duration: 1.4, repeat: Infinity, ease: "easeOut", delay: 0.25 }}
-                      style={{ position: "absolute", inset: 0, borderRadius: 9999, background: "rgba(255,59,48,0.14)" }}
+                      animate={{ scale: [1, 1.45, 1], opacity: [0.7, 0, 0.7] }}
+                      transition={{ duration: 1.6, repeat: Infinity, ease: "easeOut", delay: 0.3 }}
+                      style={{ position: "absolute", inset: -4, borderRadius: 9999, background: "rgba(255,200,100,0.20)", willChange: "transform, opacity" }}
                     />
-                    <div style={{ width: 72, height: 72, borderRadius: 9999, background: "rgba(255,59,48,0.10)", border: "2px solid rgba(255,59,48,0.25)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-                      <Bell size={28} style={{ color: "#FF3B30" }} />
+                    <motion.div
+                      animate={{ rotate: [0, -4, 4, -3, 3, 0] }}
+                      transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
+                      style={{ width: 52, height: 52, borderRadius: 14, background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.30)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}
+                    >
+                      <AlertTriangle size={26} style={{ color: "#FFDD57" }} />
+                    </motion.div>
+                  </div>
+                  <div>
+                    <motion.p
+                      animate={{ opacity: [1, 0.65, 1, 0.75, 1] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                      style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,220,100,0.90)", margin: "0 0 4px", willChange: "opacity" }}
+                    >
+                      ALERTA CRÍTICA — ESCASEZ
+                    </motion.p>
+                    <h2 style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.03em", color: "#FFFFFF", margin: 0, lineHeight: 1.15, textShadow: "0 0 20px rgba(255,200,80,0.35)" }}>
+                      MATERIAL FALTANTE<br />EN PRODUCCIÓN
+                    </h2>
+                  </div>
+                </div>
+
+                {/* Data rows */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 28 }}>
+                  {[
+                    { label: "LÍNEA", value: newTriggerAlert.production_line },
+                    { label: "MATERIAL", value: newTriggerAlert.part_number },
+                    { label: "HORA", value: new Date(newTriggerAlert.triggered_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) },
+                  ].map((row) => (
+                    <div key={row.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "rgba(0,0,0,0.18)", borderRadius: 10 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", color: "rgba(255,255,255,0.55)", textTransform: "uppercase" }}>{row.label}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "#FFFFFF", fontFamily: row.label === "HORA" ? "'SF Mono','JetBrains Mono',monospace" : "inherit" }}>{row.value}</span>
                     </div>
-                  </div>
-                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#FF3B30", marginBottom: 10 }}>
-                    ALERTA DE ESCASEZ
-                  </p>
-                  <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.03em", color: "#1D1D1F", margin: "0 0 8px", lineHeight: 1.1 }}>
-                    Nueva Alerta<br />de Material
-                  </h2>
-                  <p style={{ fontSize: 15, color: "#6E6E73", margin: 0 }}>Se ha activado una solicitud desde producción</p>
+                  ))}
                 </div>
-                <div style={{ margin: "0 32px", borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: 20, paddingBottom: 20, display: "flex", flexDirection: "column", gap: 12 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#86868B" }}>Línea</span>
-                    <span style={{ fontSize: 14, fontWeight: 500, color: "#1D1D1F" }}>{newTriggerAlert.production_line}</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#86868B" }}>Material</span>
-                    <span style={{ fontSize: 13, fontWeight: 500, color: "#1D1D1F" }}>{newTriggerAlert.part_number}</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#86868B" }}>Hora</span>
-                    <span style={{ fontSize: 13, fontFamily: "'SF Mono','JetBrains Mono',monospace", color: "#1D1D1F" }}>
-                      {new Date(newTriggerAlert.triggered_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-                    </span>
-                  </div>
-                </div>
-                <div style={{ padding: "0 32px 32px" }}>
-                  <motion.button onClick={handleAlertOK} whileTap={{ scale: 0.97 }}
-                    style={{ width: "100%", height: 52, borderRadius: 10, background: "#1D1D1F", color: "#FFFFFF", fontSize: 15, fontWeight: 600, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, letterSpacing: "-0.01em" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "#2D2D2F"}
-                    onMouseLeave={e => e.currentTarget.style.background = "#1D1D1F"}>
-                    <CheckCircle2 size={16} />
-                    Atender — Tomando acción
-                  </motion.button>
-                </div>
+
+                {/* CTA */}
+                <motion.button
+                  onClick={handleAlertOK}
+                  whileTap={{ scale: 0.97 }}
+                  style={{
+                    width: "100%", height: 52, borderRadius: 12,
+                    background: "#FFFFFF", color: "#922B21",
+                    fontSize: 14, fontWeight: 800, letterSpacing: "0.04em",
+                    border: "none", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    textTransform: "uppercase",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+                    transition: "background 150ms ease, transform 100ms ease",
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = "#F5F5F7"}
+                  onMouseLeave={e => e.currentTarget.style.background = "#FFFFFF"}
+                >
+                  <CheckCircle2 size={17} />
+                  ATENDER — TOMANDO ACCIÓN
+                </motion.button>
               </div>
             </motion.div>
-          </>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -479,71 +516,160 @@ export default function Kanban() {
         )}
       </AnimatePresence>
 
-      {/* ── Kanban Stock ── */}
+      {/* ── Kanban Stock — LED Grid ── */}
       <div style={{ padding: "40px 40px 0" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73", margin: 0 }}>
             Zona Kanban — Stock de Carritos
           </p>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, background: `${stockColor}0D`, border: `1px solid ${stockColor}22`, borderRadius: 9999, padding: "4px 10px" }}>
-            <motion.div style={{ width: 8, height: 8, borderRadius: 9999, background: stockColor }}
-              animate={{ opacity: isLow ? [1, 0.3, 1] : 1 }} transition={{ duration: 1.5, repeat: Infinity }} />
-            <span style={{ fontSize: 12, fontWeight: 600, color: stockColor, letterSpacing: "0.04em" }}>
-              {current === 0 ? "Sin stock" : isLow ? "Stock bajo" : "Operacional"}
+          <motion.div
+            animate={isLow ? { opacity: [1, 0.5, 1] } : { opacity: 1 }}
+            transition={{ duration: 1.2, repeat: Infinity }}
+            style={{ display: "flex", alignItems: "center", gap: 6, background: `${stockColor}12`, border: `1px solid ${stockColor}35`, borderRadius: 9999, padding: "5px 12px" }}
+          >
+            <div style={{ width: 7, height: 7, borderRadius: 9999, background: stockColor, boxShadow: `0 0 6px ${stockColor}` }} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: stockColor, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+              {current === 0 ? "SIN STOCK" : isLow ? "STOCK BAJO" : "OPERACIONAL"}
             </span>
-          </div>
+          </motion.div>
         </div>
 
-        <div style={{ border: "0.5px solid rgba(0,0,0,0.08)", borderRadius: 14, padding: 24, background: "#FFFFFF" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 20 }}>
+        <div style={{
+          borderRadius: 16,
+          overflow: "hidden",
+          background: "#0F1117",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.06)",
+          border: `1px solid ${isLow ? "rgba(255,159,10,0.30)" : "rgba(255,255,255,0.06)"}`,
+        }}>
+          {/* Header inside dark card */}
+          <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <p style={{ fontSize: 15, color: "#1D1D1F", margin: 0 }}>{current} de {max} carritos</p>
-              <p style={{ fontSize: 12, color: "#86868B", marginTop: 4 }}>Toca un slot para registrar entrega</p>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.40)", margin: "0 0 4px" }}>STOCK EN TIEMPO REAL</p>
+              <p style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.80)", margin: 0 }}>Toca un slot para registrar entrega</p>
             </div>
-            <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", color: stockColor, fontVariantNumeric: "tabular-nums" }}>{current}</span>
+            <div style={{ textAlign: "right" }}>
+              <motion.span
+                key={current}
+                initial={{ scale: 0.8, opacity: 0.5 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.2 }}
+                style={{ fontSize: 40, fontWeight: 800, letterSpacing: "-0.04em", color: stockColor, fontVariantNumeric: "tabular-nums", lineHeight: 1, display: "block", textShadow: `0 0 20px ${stockColor}60` }}
+              >
+                {current}
+              </motion.span>
+              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", fontVariantNumeric: "tabular-nums" }}>/ {max}</span>
+            </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: `repeat(${max}, 1fr)`, gap: 8, marginBottom: 20 }}>
-            {Array.from({ length: max }).map((_, i) => (
-              <CartSlot key={i} index={i} filled={i < current} color={stockColor} onDeliver={() => setShowDeliverConfirm(true)} />
-            ))}
+          {/* LED Cart Grid */}
+          <div style={{ padding: "20px 24px", display: "grid", gridTemplateColumns: `repeat(${max}, 1fr)`, gap: 10 }}>
+            {Array.from({ length: max }).map((_, i) => {
+              const isFilled = i < current;
+              const ledColor = isFilled ? stockColor : "rgba(255,255,255,0.06)";
+              return (
+                <motion.button
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.06, duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  onClick={() => isFilled && setShowDeliverConfirm(true)}
+                  disabled={!isFilled}
+                  whileHover={isFilled ? { scale: 1.08 } : {}}
+                  whileTap={isFilled ? { scale: 0.93 } : {}}
+                  style={{
+                    aspectRatio: "1",
+                    borderRadius: 12,
+                    border: isFilled ? `1px solid ${stockColor}50` : "1px solid rgba(255,255,255,0.08)",
+                    background: isFilled ? `${stockColor}18` : "rgba(255,255,255,0.03)",
+                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
+                    cursor: isFilled ? "pointer" : "default",
+                    boxShadow: isFilled ? `0 0 16px ${stockColor}30, inset 0 1px 0 rgba(255,255,255,0.10)` : "none",
+                    willChange: "transform",
+                    transition: "box-shadow 200ms ease, border 200ms ease",
+                  }}
+                >
+                  <ShoppingCart size={18} style={{ color: isFilled ? stockColor : "rgba(255,255,255,0.15)", filter: isFilled ? `drop-shadow(0 0 6px ${stockColor})` : "none" }} />
+                  {isFilled && (
+                    <motion.span
+                      animate={{ opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.15 }}
+                      style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: `${stockColor}CC` }}
+                    >
+                      LISTO
+                    </motion.span>
+                  )}
+                </motion.button>
+              );
+            })}
           </div>
 
-          <div style={{ marginBottom: 20 }}>
+          {/* Low stock warning banner inside dark card */}
+          <AnimatePresence>
+            {isLow && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                style={{ margin: "0 24px", marginTop: -4 }}
+              >
+                <motion.div
+                  animate={{ opacity: [1, 0.7, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  style={{ background: "rgba(255,159,10,0.12)", border: "1px solid rgba(255,159,10,0.30)", borderRadius: 10, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}
+                >
+                  <AlertTriangle size={14} style={{ color: "#FF9F0A", flexShrink: 0 }} />
+                  <div>
+                    <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#FF9F0A", margin: 0 }}>
+                      ZONA KANBAN REQUIERE REPOSICIÓN
+                    </p>
+                    <p style={{ fontSize: 11, color: "rgba(255,159,10,0.70)", marginTop: 2 }}>
+                      STOCK CRÍTICO: {current}/{max} — POR DEBAJO DEL PUNTO DE REORDEN
+                    </p>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Progress bar */}
+          <div style={{ padding: "0 24px 20px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73" }}>Nivel</span>
-              <span style={{ fontSize: 11, fontWeight: 600, color: stockColor, fontVariantNumeric: "tabular-nums" }}>{Math.round(pct * 100)}%</span>
+              <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.10em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)" }}>Nivel de stock</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: stockColor, fontVariantNumeric: "tabular-nums" }}>{Math.round(pct * 100)}%</span>
             </div>
-            <div style={{ height: 4, background: "rgba(0,0,0,0.06)", borderRadius: 9999, overflow: "hidden" }}>
-              <motion.div animate={{ width: `${pct * 100}%` }} transition={{ duration: 0.7, ease }}
-                style={{ height: "100%", background: stockColor, borderRadius: 9999 }} />
+            <div style={{ height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 9999, overflow: "hidden" }}>
+              <motion.div
+                animate={{ width: `${pct * 100}%` }}
+                transition={{ duration: 0.8, ease }}
+                style={{ height: "100%", background: `linear-gradient(90deg, ${stockColor}99, ${stockColor})`, borderRadius: 9999, boxShadow: `0 0 8px ${stockColor}60` }}
+              />
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-              <span style={{ fontSize: 11, color: "#AEAEB2" }}>0</span>
-              <span style={{ fontSize: 11, color: "#86868B" }}>Reorden: {reorder}</span>
-              <span style={{ fontSize: 11, color: "#AEAEB2" }}>{max}</span>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
+              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.20)" }}>0</span>
+              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)" }}>Reorden: {reorder}</span>
+              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.20)" }}>{max}</span>
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: 8 }}>
+          {/* Action buttons */}
+          <div style={{ padding: "0 24px 24px", display: "flex", gap: 8 }}>
             <button
               onClick={() => setShowDeliverConfirm(true)}
               disabled={current === 0}
-              style={{ flex: 1, height: 40, borderRadius: 10, border: "1px solid rgba(0,0,0,0.10)", background: "transparent", fontSize: 13, fontWeight: 400, color: "#1D1D1F", cursor: current === 0 ? "not-allowed" : "pointer", opacity: current === 0 ? 0.35 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "background 120ms ease" }}
-              onMouseEnter={e => { if (current > 0) e.currentTarget.style.background = "rgba(0,0,0,0.04)"; }}
-              onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+              style={{ flex: 1, height: 42, borderRadius: 10, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 500, color: current === 0 ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.80)", cursor: current === 0 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "background 150ms ease" }}
+              onMouseEnter={e => { if (current > 0) e.currentTarget.style.background = "rgba(255,255,255,0.10)"; }}
+              onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
             >
               <Minus size={14} />
               Entrega manual
             </button>
             <button
               onClick={() => setShowRequestModal(true)}
-              style={{ flex: 1, height: 40, borderRadius: 10, border: "none", background: "#1D1D1F", fontSize: 13, fontWeight: 500, color: "#FFFFFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "background 150ms ease" }}
-              onMouseEnter={e => e.currentTarget.style.background = "#2D2D2F"}
-              onMouseLeave={e => e.currentTarget.style.background = "#1D1D1F"}
+              style={{ flex: 1, height: 42, borderRadius: 10, border: "none", background: "#FFFFFF", fontSize: 13, fontWeight: 700, color: "#0F1117", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "background 150ms ease, opacity 150ms ease", letterSpacing: "0.02em" }}
+              onMouseEnter={e => e.currentTarget.style.background = "#E8E8ED"}
+              onMouseLeave={e => e.currentTarget.style.background = "#FFFFFF"}
             >
               <Plus size={14} />
-              Solicitar a Sopladora 1
+              Solicitar a Sopladora 12
             </button>
           </div>
         </div>
@@ -689,7 +815,16 @@ export default function Kanban() {
         )}
       </AnimatePresence>
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes neonFlicker {
+          0%, 100% { box-shadow: 0 0 0 1.5px rgba(255,80,60,0.55), 0 0 40px rgba(255,59,48,0.40), 0 40px 80px rgba(0,0,0,0.50); }
+          25%       { box-shadow: 0 0 0 1.5px rgba(255,80,60,0.30), 0 0 20px rgba(255,59,48,0.20), 0 40px 80px rgba(0,0,0,0.50); }
+          30%       { box-shadow: 0 0 0 1.5px rgba(255,80,60,0.60), 0 0 48px rgba(255,59,48,0.50), 0 40px 80px rgba(0,0,0,0.50); }
+          75%       { box-shadow: 0 0 0 1.5px rgba(255,80,60,0.50), 0 0 36px rgba(255,59,48,0.35), 0 40px 80px rgba(0,0,0,0.50); }
+          80%       { box-shadow: 0 0 0 1.5px rgba(255,80,60,0.25), 0 0 14px rgba(255,59,48,0.15), 0 40px 80px rgba(0,0,0,0.50); }
+        }
+      `}</style>
     </div>
   );
 }
