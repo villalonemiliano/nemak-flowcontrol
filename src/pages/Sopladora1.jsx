@@ -115,6 +115,11 @@ export default function Sopladora1() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["productionOrders"] }),
   });
 
+  const updateInventoryMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.CartInventory.update(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["cartInventory"] }),
+  });
+
   useEffect(() => {
     if (shownRef.current || orders.length === 0) return;
     const seen = getSeenOrders();
@@ -131,7 +136,14 @@ export default function Sopladora1() {
   const handleAdvance = async (order, nextStatus) => {
     setAdvancingId(order.id);
     const updateData = { status: nextStatus };
-    if (nextStatus === "delivered") updateData.completed_at = new Date().toISOString();
+    if (nextStatus === "delivered") {
+      updateData.completed_at = new Date().toISOString();
+      // Incrementar stock de Kanban al confirmar entrega
+      if (kanbanInv) {
+        const newCount = Math.min(kanbanInv.current_carts + order.requested_carts, kanbanInv.max_capacity);
+        await updateInventoryMutation.mutateAsync({ id: kanbanInv.id, data: { current_carts: newCount } });
+      }
+    }
     await advanceMutation.mutateAsync({ id: order.id, data: updateData });
     setAdvancingId(null);
   };
