@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, AlertTriangle, Package, Clock, Bell, CheckCircle2, ShoppingCart, Send, RefreshCw } from "lucide-react";
+import { Trash2, AlertTriangle, Package, Clock, Bell, CheckCircle2, ShoppingCart, Send, RefreshCw, Plus } from "lucide-react";
 import AlertKPIBar from "@/components/kanban/AlertKPIBar";
 
 // ─── helpers ───────────────────────────────────────────────────
@@ -180,6 +180,9 @@ export default function Kanban() {
   const [newTriggerAlert, setNewTriggerAlert] = useState(null);
   const [showDeliverConfirm, setShowDeliverConfirm] = useState(false);
   const [delivering, setDelivering] = useState(false);
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [requestQty, setRequestQty] = useState(1);
+  const [requesting, setRequesting] = useState(false);
 
   const { data: triggers = [] } = useQuery({
     queryKey: ["triggers"],
@@ -261,6 +264,19 @@ export default function Kanban() {
     queryClient.invalidateQueries({ queryKey: ["triggers"] });
     setClearing(false);
     setShowClearConfirm(false);
+  };
+
+  const handleRequestSopladora = async () => {
+    setRequesting(true);
+    await base44.entities.ProductionOrder.create({
+      requested_carts: requestQty,
+      status: "pending",
+      requested_at: new Date().toISOString(),
+      notes: "Solicitud desde Zona Kanban",
+    });
+    setRequesting(false);
+    setShowRequestModal(false);
+    setRequestQty(1);
   };
 
   const handleDeliver = async () => {
@@ -426,11 +442,24 @@ export default function Kanban() {
             </div>
           </div>
 
-          <button onClick={() => setShowDeliverConfirm(true)} disabled={current === 0}
-            className="mt-4 w-full h-10 rounded-xl text-sm font-semibold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 transition-colors disabled:opacity-30 flex items-center justify-center gap-2">
-            <Send className="w-4 h-4" />
-            Registrar entrega manual
-          </button>
+          <div className="mt-4 flex gap-2">
+            <button onClick={() => setShowDeliverConfirm(true)} disabled={current === 0}
+              className="flex-1 h-10 rounded-[10px] text-[13px] font-medium border transition-colors duration-150 disabled:opacity-30 flex items-center justify-center gap-2"
+              style={{ background: "transparent", border: "1px solid rgba(0,0,0,0.12)", color: "#1D1D1F" }}
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.04)"}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+              <Send className="w-3.5 h-3.5" />
+              Entrega manual
+            </button>
+            <button onClick={() => setShowRequestModal(true)}
+              className="flex-1 h-10 rounded-[10px] text-[13px] font-medium text-white transition-colors duration-150 flex items-center justify-center gap-2"
+              style={{ background: "#1D1D1F" }}
+              onMouseEnter={e => e.currentTarget.style.background = "#2D2D2F"}
+              onMouseLeave={e => e.currentTarget.style.background = "#1D1D1F"}>
+              <Plus className="w-3.5 h-3.5" />
+              Solicitar a Sopladora 1
+            </button>
+          </div>
         </div>
       </div>
 
@@ -470,6 +499,63 @@ export default function Kanban() {
                     className="flex-1 h-11 rounded-2xl text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
                     {delivering ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                     Confirmar
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ── Request Sopladora Modal ───────────────────────────── */}
+      <AnimatePresence>
+        {showRequestModal && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" onClick={() => !requesting && setShowRequestModal(false)} />
+            <motion.div initial={{ opacity: 0, scale: 0.93, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.93, y: 16 }} transition={{ duration: 0.24, ease: [0.25, 0.1, 0.25, 1] }}
+              className="fixed inset-0 flex items-center justify-center z-50 px-5">
+              <div className="w-full max-w-xs bg-white rounded-[14px] overflow-hidden shadow-xl" style={{ border: "0.5px solid rgba(0,0,0,0.08)" }}>
+                {/* Header */}
+                <div className="px-6 pt-6 pb-5 border-b" style={{ borderColor: "rgba(0,0,0,0.06)" }}>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] mb-1" style={{ color: "#6E6E73" }}>Solicitud de Producción</p>
+                  <h3 className="text-[17px] font-medium" style={{ color: "#1D1D1F" }}>Pedir carritos a Sopladora 1</h3>
+                </div>
+
+                {/* Quantity selector */}
+                <div className="px-6 py-5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] mb-3" style={{ color: "#6E6E73" }}>Cantidad de carritos</p>
+                  <div className="flex items-center justify-between rounded-[10px] px-4 py-3" style={{ background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.08)" }}>
+                    <button
+                      onClick={() => setRequestQty(q => Math.max(1, q - 1))}
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-lg font-medium transition-colors"
+                      style={{ color: "#1D1D1F", background: "white", border: "1px solid rgba(0,0,0,0.10)" }}
+                    >−</button>
+                    <span className="text-[28px] font-bold tabular-nums" style={{ color: "#1D1D1F" }}>{requestQty}</span>
+                    <button
+                      onClick={() => setRequestQty(q => Math.min(max, q + 1))}
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-lg font-medium transition-colors"
+                      style={{ color: "#1D1D1F", background: "white", border: "1px solid rgba(0,0,0,0.10)" }}
+                    >+</button>
+                  </div>
+                  <p className="text-[12px] mt-2" style={{ color: "#86868B" }}>
+                    Zona Kanban tiene {current} de {max} carritos actualmente.
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div className="px-6 pb-6 flex gap-2">
+                  <button onClick={() => setShowRequestModal(false)} disabled={requesting}
+                    className="flex-1 h-10 rounded-[10px] text-[13px] font-medium transition-colors duration-150"
+                    style={{ background: "transparent", border: "1px solid rgba(0,0,0,0.12)", color: "#1D1D1F" }}>
+                    Cancelar
+                  </button>
+                  <button onClick={handleRequestSopladora} disabled={requesting}
+                    className="flex-1 h-10 rounded-[10px] text-[13px] font-medium text-white flex items-center justify-center gap-2 transition-colors duration-150"
+                    style={{ background: "#1D1D1F", opacity: requesting ? 0.35 : 1 }}>
+                    {requesting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                    Enviar solicitud
                   </button>
                 </div>
               </div>
