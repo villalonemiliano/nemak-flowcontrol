@@ -4,56 +4,85 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { Factory, CheckCircle2, Clock, RefreshCw, Play, Package, AlertTriangle, Bell } from "lucide-react";
 
-// ─── one-timer key per order ────────────────────────────────────
 const SEEN_ORDERS_KEY = "nemak_seen_orders";
 function getSeenOrders() {
-  try { return new Set(JSON.parse(localStorage.getItem(SEEN_ORDERS_KEY) || "[]")); }
-  catch { return new Set(); }
+  try { return new Set(JSON.parse(localStorage.getItem(SEEN_ORDERS_KEY) || "[]")); } catch { return new Set(); }
 }
 function markOrderSeen(id) {
   const s = getSeenOrders(); s.add(id);
   localStorage.setItem(SEEN_ORDERS_KEY, JSON.stringify([...s]));
 }
 
-const statusConfig = {
-  pending:       { label: "Pendiente",   color: "#F59E0B", bg: "bg-amber-50",  border: "border-amber-200",  text: "text-amber-700", icon: Clock },
-  in_production: { label: "Produciendo", color: "#3B82F6", bg: "bg-blue-50",   border: "border-blue-200",   text: "text-blue-700",  icon: Play },
-  ready:         { label: "Listo",       color: "#22C55E", bg: "bg-green-50",  border: "border-green-200",  text: "text-green-700", icon: CheckCircle2 },
-  delivered:     { label: "Entregado",   color: "#94A3B8", bg: "bg-slate-50",  border: "border-slate-200",  text: "text-slate-500", icon: Package },
+const ease = [0.25, 0.1, 0.25, 1];
+
+const statusCfg = {
+  pending:       { label: "Pendiente",   color: "#FF9F0A", bg: "rgba(255,159,10,0.08)",  border: "rgba(255,159,10,0.20)", icon: Clock },
+  in_production: { label: "Produciendo", color: "#0071E3", bg: "rgba(0,113,227,0.08)",   border: "rgba(0,113,227,0.20)", icon: Play },
+  ready:         { label: "Listo",       color: "#34C759", bg: "rgba(52,199,89,0.08)",   border: "rgba(52,199,89,0.20)", icon: CheckCircle2 },
+  delivered:     { label: "Entregado",   color: "#AEAEB2", bg: "rgba(174,174,178,0.08)", border: "rgba(174,174,178,0.20)", icon: Package },
 };
 
+const nextStatusMap = { pending: "in_production", in_production: "ready", ready: "delivered" };
+const nextLabelMap  = { pending: "Iniciar producción", in_production: "Marcar listo", ready: "Confirmar entrega" };
+
 function OrderCard({ order, onAdvance, isAdvancing }) {
-  const cfg = statusConfig[order.status] || statusConfig.pending;
+  const cfg = statusCfg[order.status] || statusCfg.pending;
   const Icon = cfg.icon;
-  const nextStatus = { pending: "in_production", in_production: "ready", ready: "delivered" }[order.status];
-  const nextLabel  = { pending: "Iniciar producción", in_production: "Marcar listo", ready: "Confirmar entrega" }[order.status];
+  const next = nextStatusMap[order.status];
+  const nextLabel = nextLabelMap[order.status];
 
   return (
-    <motion.div layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      className={`rounded-2xl p-4 border ${cfg.bg} ${cfg.border}`}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2.5">
-          <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${cfg.bg} border ${cfg.border}`}>
-            <Icon className="w-4 h-4" style={{ color: cfg.color }} />
-          </div>
+    <motion.div
+      layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}
+      transition={{ duration: 0.2, ease }}
+      style={{
+        background: cfg.bg,
+        border: `1px solid ${cfg.border}`,
+        borderLeft: `3px solid ${cfg.color}`,
+        borderRadius: "0 10px 10px 0",
+        padding: "16px 16px 16px 16px",
+        marginBottom: 8,
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <Icon size={16} style={{ color: cfg.color, flexShrink: 0 }} />
           <div>
-            <p className="text-sm font-bold text-slate-900">{order.requested_carts} carrito{order.requested_carts !== 1 ? "s" : ""}</p>
-            <p className={`text-[11px] font-semibold ${cfg.text}`}>{cfg.label}</p>
+            <p style={{ fontSize: 15, color: "#1D1D1F", margin: 0 }}>
+              {order.requested_carts} carrito{order.requested_carts !== 1 ? "s" : ""}
+            </p>
+            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: cfg.color, marginTop: 2 }}>
+              {cfg.label}
+            </p>
           </div>
         </div>
-        <div className="text-right">
-          <p className="text-[9px] text-slate-400 uppercase tracking-wider">Solicitado</p>
-          <p className="text-[11px] text-slate-500 font-mono">
+        <div style={{ textAlign: "right" }}>
+          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#86868B", margin: "0 0 2px" }}>Solicitado</p>
+          <p style={{ fontSize: 12, fontFamily: "'SF Mono','JetBrains Mono',monospace", color: "#86868B" }}>
             {new Date(order.requested_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
           </p>
         </div>
       </div>
-      {order.notes && <p className="text-xs text-slate-400 mb-3">{order.notes}</p>}
-      {nextStatus && (
-        <button onClick={() => onAdvance(order, nextStatus)} disabled={isAdvancing}
-          className="w-full h-9 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50">
-          {isAdvancing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : null}
+      {order.notes && (
+        <p style={{ fontSize: 12, color: "#86868B", marginBottom: 12 }}>{order.notes}</p>
+      )}
+      {next && (
+        <button
+          onClick={() => onAdvance(order, next)}
+          disabled={isAdvancing}
+          style={{
+            width: "100%", height: 36, borderRadius: 10,
+            border: "1px solid rgba(0,0,0,0.10)", background: "white",
+            fontSize: 13, fontWeight: 400, color: "#1D1D1F",
+            cursor: isAdvancing ? "not-allowed" : "pointer",
+            opacity: isAdvancing ? 0.35 : 1,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            transition: "background 120ms ease",
+          }}
+          onMouseEnter={e => { if (!isAdvancing) e.currentTarget.style.background = "rgba(0,0,0,0.04)"; }}
+          onMouseLeave={e => e.currentTarget.style.background = "white"}
+        >
+          {isAdvancing ? <RefreshCw size={13} style={{ animation: "spin 0.7s linear infinite" }} /> : null}
           {nextLabel}
         </button>
       )}
@@ -86,15 +115,11 @@ export default function Sopladora1() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["productionOrders"] }),
   });
 
-  // One-timer per order: show fullscreen alert for first unseen pending order
   useEffect(() => {
     if (shownRef.current || orders.length === 0) return;
     const seen = getSeenOrders();
     const unseen = orders.find((o) => o.status === "pending" && !seen.has(o.id));
-    if (unseen) {
-      shownRef.current = true;
-      setPendingOrderAlert(unseen);
-    }
+    if (unseen) { shownRef.current = true; setPendingOrderAlert(unseen); }
   }, [orders]);
 
   const handleOrderAlertOK = () => {
@@ -111,56 +136,74 @@ export default function Sopladora1() {
     setAdvancingId(null);
   };
 
-  const pending       = orders.filter((o) => o.status === "pending");
-  const inProduction  = orders.filter((o) => o.status === "in_production");
-  const ready         = orders.filter((o) => o.status === "ready");
-  const delivered     = orders.filter((o) => o.status === "delivered").slice(0, 5);
-  const urgentCount   = pending.length + inProduction.length;
-  const kanbanIsLow   = kanbanInv && kanbanInv.current_carts <= kanbanInv.reorder_point;
+  const pending      = orders.filter((o) => o.status === "pending");
+  const inProduction = orders.filter((o) => o.status === "in_production");
+  const ready        = orders.filter((o) => o.status === "ready");
+  const delivered    = orders.filter((o) => o.status === "delivered").slice(0, 5);
+  const urgentCount  = pending.length + inProduction.length;
+  const kanbanIsLow  = kanbanInv && kanbanInv.current_carts <= kanbanInv.reorder_point;
+
+  const kpis = [
+    { label: "Solicitudes", value: pending.length, color: "#FF9F0A", icon: Clock },
+    { label: "Produciendo", value: inProduction.length, color: "#0071E3", icon: Factory },
+    { label: "Listos",      value: ready.length, color: "#34C759", icon: CheckCircle2 },
+    { label: "Entregados",  value: orders.filter(o => o.status === "delivered").length, color: "#AEAEB2", icon: Package },
+  ];
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20 lg:pb-8">
+    <div className="min-h-screen pb-24 lg:pb-10" style={{ background: "#FFFFFF" }}>
 
-      {/* ── Fullscreen Order Alert ──────────────────────────── */}
+      {/* ── Fullscreen Order Alert ── */}
       <AnimatePresence>
         {pendingOrderAlert && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/40 backdrop-blur-md" />
-            <motion.div initial={{ opacity: 0, scale: 0.9, y: 40 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 40 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="fixed inset-0 z-50" style={{ background: "rgba(0,0,0,0.40)", backdropFilter: "blur(12px)" }} />
+            <motion.div initial={{ opacity: 0, scale: 0.93, y: 24 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.93, y: 24 }} transition={{ duration: 0.24, ease }}
               className="fixed inset-0 z-50 flex items-center justify-center px-5">
-              <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
-                <div className="bg-amber-50 border-b border-amber-100 px-6 pt-8 pb-6 text-center">
-                  <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 1.2, repeat: Infinity }}
-                    className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
-                    <Bell className="w-8 h-8 text-amber-500" />
+              <div style={{ width: "100%", maxWidth: 360, background: "#FFFFFF", borderRadius: 14, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
+                <div style={{ background: "rgba(255,159,10,0.08)", borderBottom: "1px solid rgba(255,159,10,0.16)", padding: "32px 24px 24px", textAlign: "center" }}>
+                  <motion.div
+                    animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 1.4, repeat: Infinity }}
+                    style={{ width: 56, height: 56, borderRadius: 9999, background: "rgba(255,159,10,0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}
+                  >
+                    <Bell size={24} style={{ color: "#FF9F0A" }} />
                   </motion.div>
-                  <h2 className="text-xl font-bold text-slate-900 mb-1">¡Nueva Solicitud de Carritos!</h2>
-                  <p className="text-sm text-slate-500">La Zona Kanban requiere producción</p>
+                  <h2 style={{ fontSize: 17, fontWeight: 500, color: "#1D1D1F", margin: "0 0 6px" }}>Nueva Solicitud de Carritos</h2>
+                  <p style={{ fontSize: 15, color: "#6E6E73", margin: 0 }}>La Zona Kanban requiere producción</p>
                 </div>
-                <div className="px-6 py-5 space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-xs text-slate-400 uppercase tracking-wider">Carritos solicitados</span>
-                    <span className="text-lg font-black text-amber-600">{pendingOrderAlert.requested_carts}</span>
+                <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73" }}>Carritos solicitados</span>
+                    <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em", color: "#1D1D1F", fontVariantNumeric: "tabular-nums" }}>{pendingOrderAlert.requested_carts}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-xs text-slate-400 uppercase tracking-wider">Hora de solicitud</span>
-                    <span className="text-sm font-semibold text-slate-700">
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73" }}>Hora de solicitud</span>
+                    <span style={{ fontSize: 12, fontFamily: "'SF Mono','JetBrains Mono',monospace", color: "#86868B" }}>
                       {new Date(pendingOrderAlert.requested_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                     </span>
                   </div>
                   {pendingOrderAlert.notes && (
-                    <div className="flex justify-between">
-                      <span className="text-xs text-slate-400 uppercase tracking-wider">Nota</span>
-                      <span className="text-xs text-slate-600 text-right max-w-[180px]">{pendingOrderAlert.notes}</span>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                      <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73", flexShrink: 0 }}>Nota</span>
+                      <span style={{ fontSize: 12, color: "#86868B", textAlign: "right" }}>{pendingOrderAlert.notes}</span>
                     </div>
                   )}
                 </div>
-                <div className="px-6 pb-6">
-                  <button onClick={handleOrderAlertOK}
-                    className="w-full h-12 rounded-2xl bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
-                    <CheckCircle2 className="w-4 h-4" />
+                <div style={{ padding: "0 24px 24px" }}>
+                  <button
+                    onClick={handleOrderAlertOK}
+                    style={{
+                      width: "100%", height: 48, borderRadius: 10, background: "#1D1D1F",
+                      color: "#FFFFFF", fontSize: 15, fontWeight: 500, border: "none", cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                      transition: "background 150ms ease",
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = "#2D2D2F"}
+                    onMouseLeave={e => e.currentTarget.style.background = "#1D1D1F"}
+                  >
+                    <CheckCircle2 size={16} />
                     OK — Solicitud recibida
                   </button>
                 </div>
@@ -170,85 +213,112 @@ export default function Sopladora1() {
         )}
       </AnimatePresence>
 
-      {/* ── Header ───────────────────────────────────────────── */}
-      <div className="px-6 pt-8 pb-4">
-        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-1">Control de Producción</p>
-        <div className="flex items-start justify-between">
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Sopladora 1</h1>
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold ${urgentCount > 0 ? "bg-amber-50 border border-amber-200 text-amber-700" : "bg-green-50 border border-green-200 text-green-700"}`}>
-            <motion.div animate={{ opacity: urgentCount > 0 ? [1, 0.3, 1] : 1 }} transition={{ duration: 1.5, repeat: Infinity }}
-              className={`w-2 h-2 rounded-full ${urgentCount > 0 ? "bg-amber-400" : "bg-green-500"}`} />
-            {urgentCount > 0 ? `${urgentCount} en cola` : "Sin pendientes"}
+      {/* ── Header ── */}
+      <div style={{ padding: "40px 40px 0" }}>
+        <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "#6E6E73", textTransform: "uppercase", marginBottom: 8 }}>
+          Control de Producción
+        </p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em", color: "#1D1D1F", margin: 0 }}>
+            Sopladora 1
+          </h1>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 6,
+            background: urgentCount > 0 ? "rgba(255,159,10,0.08)" : "rgba(52,199,89,0.08)",
+            border: `1px solid ${urgentCount > 0 ? "rgba(255,159,10,0.20)" : "rgba(52,199,89,0.20)"}`,
+            borderRadius: 9999, padding: "5px 12px",
+          }}>
+            <motion.div
+              style={{ width: 8, height: 8, borderRadius: 9999, background: urgentCount > 0 ? "#FF9F0A" : "#34C759", flexShrink: 0 }}
+              animate={{ opacity: urgentCount > 0 ? [1, 0.3, 1] : 1 }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
+            <span style={{ fontSize: 13, fontWeight: 500, color: urgentCount > 0 ? "#7A4700" : "#1A5C2E" }}>
+              {urgentCount > 0 ? `${urgentCount} en cola` : "Sin pendientes"}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* ── Kanban low alert ─────────────────────────────────── */}
+      {/* ── Kanban low alert ── */}
       <AnimatePresence>
         {kanbanIsLow && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-            className="mx-6 mb-4 rounded-2xl px-4 py-3 flex items-center gap-3 bg-amber-50 border border-amber-200">
-            <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
-              <AlertTriangle className="w-4 h-4 text-amber-500" />
-            </motion.div>
-            <div>
-              <p className="text-sm font-semibold text-amber-800">Zona Kanban requiere reposición</p>
-              <p className="text-xs text-amber-600/70">Stock: {kanbanInv?.current_carts}/{kanbanInv?.max_capacity} — bajo el punto de reorden</p>
+          <motion.div
+            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.18, ease }}
+            style={{ margin: "20px 40px 0" }}
+          >
+            <div style={{
+              background: "rgba(255,159,10,0.08)", border: "1px solid rgba(255,159,10,0.20)",
+              borderLeft: "3px solid #FF9F0A", borderRadius: "0 10px 10px 0",
+              padding: "12px 16px", display: "flex", alignItems: "center", gap: 10,
+            }}>
+              <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                <AlertTriangle size={15} style={{ color: "#FF9F0A", flexShrink: 0 }} />
+              </motion.div>
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 500, color: "#7A4700", margin: 0 }}>Zona Kanban requiere reposición</p>
+                <p style={{ fontSize: 12, color: "#86868B", marginTop: 2 }}>
+                  Stock: {kanbanInv?.current_carts}/{kanbanInv?.max_capacity} — bajo el punto de reorden
+                </p>
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── KPI Strip ────────────────────────────────────────── */}
-      <div className="px-6 grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        {[
-          { label: "Solicitudes", value: pending.length, color: "text-amber-600", bg: "bg-amber-50 border-amber-200", icon: Clock },
-          { label: "Produciendo", value: inProduction.length, color: "text-blue-600", bg: "bg-blue-50 border-blue-200", icon: Factory },
-          { label: "Listos",      value: ready.length,        color: "text-green-600", bg: "bg-green-50 border-green-200", icon: CheckCircle2 },
-          { label: "Entregados",  value: orders.filter(o => o.status === "delivered").length, color: "text-slate-500", bg: "bg-slate-50 border-slate-200", icon: Package },
-        ].map((kpi, i) => {
+      {/* ── KPI strip ── */}
+      <div style={{ padding: "24px 40px 0", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 8 }}>
+        {kpis.map((kpi, i) => {
           const Icon = kpi.icon;
           return (
-            <motion.div key={kpi.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
-              className={`rounded-2xl px-4 py-3.5 border ${kpi.bg}`}>
-              <div className="flex items-center gap-2 mb-1">
-                <Icon className={`w-3.5 h-3.5 ${kpi.color}`} />
-                <p className="text-[10px] text-slate-400 uppercase tracking-widest">{kpi.label}</p>
+            <motion.div key={kpi.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05, duration: 0.2, ease }}
+              style={{ border: "0.5px solid rgba(0,0,0,0.08)", borderRadius: 14, padding: "16px 20px", background: "#FFFFFF" }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                <Icon size={14} style={{ color: kpi.color }} />
+                <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73", margin: 0 }}>{kpi.label}</p>
               </div>
-              <span className={`text-3xl font-black tabular-nums ${kpi.color}`}>{kpi.value}</span>
+              <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", color: "#1D1D1F", fontVariantNumeric: "tabular-nums" }}>{kpi.value}</span>
             </motion.div>
           );
         })}
       </div>
 
-      {/* ── Order Columns ─────────────────────────────────────── */}
-      <div className="px-6 grid grid-cols-1 lg:grid-cols-4 gap-4">
+      {/* ── Order columns ── */}
+      <div style={{ padding: "24px 40px 0", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 24 }}>
         {[
-          { title: "Por producir", orders: pending,      color: "#F59E0B", dot: "bg-amber-400" },
-          { title: "En producción", orders: inProduction, color: "#3B82F6", dot: "bg-blue-400" },
-          { title: "Listos",        orders: ready,        color: "#22C55E", dot: "bg-green-500" },
-          { title: "Entregados",    orders: delivered,    color: "#94A3B8", dot: "bg-slate-300" },
+          { title: "Por producir",  orders: pending,      color: "#FF9F0A" },
+          { title: "En producción", orders: inProduction, color: "#0071E3" },
+          { title: "Listos",        orders: ready,        color: "#34C759" },
+          { title: "Entregados",    orders: delivered,    color: "#AEAEB2" },
         ].map((col) => (
           <div key={col.title}>
-            <div className="flex items-center gap-2 mb-3">
-              <div className={`w-2 h-2 rounded-full ${col.dot}`} />
-              <h3 className="text-xs font-semibold text-slate-600">{col.title}</h3>
-              <span className="ml-auto text-[11px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">{col.orders.length}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+              <div style={{ width: 8, height: 8, borderRadius: 9999, background: col.color, flexShrink: 0 }} />
+              <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73", margin: 0 }}>{col.title}</p>
+              <span style={{
+                marginLeft: "auto", fontSize: 11, fontWeight: 600, color: "#86868B",
+                background: "rgba(0,0,0,0.04)", borderRadius: 9999, padding: "1px 8px",
+              }}>{col.orders.length}</span>
             </div>
-            <div className="space-y-2">
-              <AnimatePresence>
-                {col.orders.length === 0 ? (
-                  <div className="rounded-2xl px-4 py-8 text-center bg-white border border-dashed border-slate-200">
-                    <p className="text-xs text-slate-300">Sin órdenes</p>
-                  </div>
-                ) : col.orders.map((order) => (
+            <AnimatePresence>
+              {col.orders.length === 0 ? (
+                <div style={{ border: "1px dashed rgba(0,0,0,0.08)", borderRadius: 10, padding: "32px 16px", textAlign: "center" }}>
+                  <p style={{ fontSize: 13, color: "#AEAEB2", margin: 0 }}>Sin órdenes</p>
+                </div>
+              ) : (
+                col.orders.map((order) => (
                   <OrderCard key={order.id} order={order} onAdvance={handleAdvance} isAdvancing={advancingId === order.id} />
-                ))}
-              </AnimatePresence>
-            </div>
+                ))
+              )}
+            </AnimatePresence>
           </div>
         ))}
       </div>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

@@ -3,42 +3,35 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, AlertTriangle, Package, Clock, Bell, CheckCircle2, ShoppingCart, Send, RefreshCw, Plus } from "lucide-react";
+import { Trash2, AlertTriangle, Clock, Bell, CheckCircle2, ShoppingCart, Send, RefreshCw, Plus, Minus } from "lucide-react";
 import AlertKPIBar from "@/components/kanban/AlertKPIBar";
 
-// ─── helpers ───────────────────────────────────────────────────
+const ease = [0.25, 0.1, 0.25, 1];
 const SEEN_KEY = "nemak_seen_triggers";
 function getSeenIds() {
-  try { return new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || "[]")); }
-  catch { return new Set(); }
+  try { return new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || "[]")); } catch { return new Set(); }
 }
 function markSeen(id) {
   const s = getSeenIds(); s.add(id);
   localStorage.setItem(SEEN_KEY, JSON.stringify([...s]));
 }
-
 function formatElapsed(ms) {
   if (!ms || ms <= 0) return "—";
   const s = Math.floor(ms / 1000), h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
   if (h > 0) return `${h}h ${m}m`; if (m > 0) return `${m}m`; return `${s}s`;
 }
 
-const critCfg = {
-  HIGH:   { badge: "bg-red-100 text-red-600",    bar: "bg-red-500",    glow: true },
-  MEDIUM: { badge: "bg-amber-100 text-amber-600", bar: "bg-amber-400",  glow: false },
-  LOW:    { badge: "bg-blue-100 text-blue-600",   bar: "bg-blue-400",   glow: false },
-};
+const critColor = { HIGH: "#FF3B30", MEDIUM: "#FF9F0A", LOW: "#0071E3" };
 const colCfg = {
-  unassigned:  { title: "Pendiente",   sub: "Nuevas alertas",          dot: "bg-red-400",   accent: "#EF4444" },
-  in_progress: { title: "En Progreso", sub: "En atención activa",      dot: "bg-amber-400", accent: "#F59E0B" },
-  resolved:    { title: "Resuelto",    sub: "Incidentes cerrados",      dot: "bg-green-500", accent: "#22C55E" },
+  unassigned:  { title: "Pendiente",   color: "#FF3B30" },
+  in_progress: { title: "En Progreso", color: "#FF9F0A" },
+  resolved:    { title: "Resuelto",    color: "#34C759" },
 };
 
-// ─── Trigger Card ───────────────────────────────────────────────
 function TriggerCard({ trigger, index }) {
   const [elapsed, setElapsed] = useState(0);
-  const cfg = critCfg[trigger.criticality] || critCfg.LOW;
   const isResolved = trigger.status === "resolved";
+  const color = critColor[trigger.criticality] || critColor.LOW;
 
   useEffect(() => {
     if (isResolved) {
@@ -61,30 +54,40 @@ function TriggerCard({ trigger, index }) {
           style={{
             ...provided.draggableProps.style,
             opacity: snapshot.isDragging ? 0.9 : 1,
-            transform: snapshot.isDragging ? `${provided.draggableProps.style?.transform} rotate(2deg)` : provided.draggableProps.style?.transform,
+            background: "#FFFFFF",
+            border: "0.5px solid rgba(0,0,0,0.08)",
+            borderLeft: `3px solid ${color}`,
+            borderRadius: "0 10px 10px 0",
+            padding: "14px 16px",
+            marginBottom: 8,
+            cursor: "grab",
+            boxShadow: snapshot.isDragging ? "0 8px 24px rgba(0,0,0,0.12)" : "none",
+            userSelect: "none",
           }}
-          className="rounded-xl bg-white border border-slate-200 shadow-sm cursor-grab active:cursor-grabbing select-none mb-2 overflow-hidden hover:shadow-md transition-shadow"
         >
-          <div className={`h-0.5 w-full ${cfg.bar}`} />
-          <div className="p-3.5">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-mono text-slate-400 truncate mr-2">{trigger.production_line}</span>
-              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${cfg.badge}`}>
-                {trigger.criticality}
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5 mb-2">
-              <Package className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <span className="text-[13px] font-semibold text-slate-800 font-mono truncate">{trigger.part_number}</span>
-            </div>
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-              <span className="text-[10px] text-slate-400">
-                {new Date(trigger.triggered_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
-              </span>
-              <div className={`flex items-center gap-1 text-[10px] font-mono ${isResolved ? "text-green-600" : trigger.criticality === "HIGH" ? "text-red-500" : "text-slate-400"}`}>
-                <Clock className="w-3 h-3" />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+            <p style={{ fontSize: 12, fontFamily: "'SF Mono','JetBrains Mono',monospace", color: "#86868B", margin: 0 }}>
+              {trigger.production_line}
+            </p>
+            <span style={{
+              fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase",
+              background: `${color}0D`, border: `1px solid ${color}22`, color, borderRadius: 6, padding: "2px 8px",
+            }}>
+              {trigger.criticality}
+            </span>
+          </div>
+          <p style={{ fontSize: 13, fontWeight: 500, fontFamily: "'SF Mono','JetBrains Mono',monospace", color: "#0071E3", margin: "0 0 8px" }}>
+            {trigger.part_number}
+          </p>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 8, borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+            <span style={{ fontSize: 12, fontFamily: "'SF Mono','JetBrains Mono',monospace", color: "#86868B" }}>
+              {new Date(trigger.triggered_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
+            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <Clock size={12} style={{ color: "#86868B" }} />
+              <span style={{ fontSize: 12, fontFamily: "'SF Mono','JetBrains Mono',monospace", color: isResolved ? "#34C759" : "#86868B" }}>
                 {formatElapsed(elapsed)}
-              </div>
+              </span>
             </div>
           </div>
         </div>
@@ -93,35 +96,34 @@ function TriggerCard({ trigger, index }) {
   );
 }
 
-// ─── Kanban Column ──────────────────────────────────────────────
 function KanbanColumn({ columnId, triggers, index }) {
   const cfg = colCfg[columnId];
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: 0.05 * index }}
-      className="flex flex-col"
-    >
-      <div className="flex items-center gap-2 mb-3 px-1">
-        <div className={`w-2 h-2 rounded-full ${cfg.dot}`} />
-        <h3 className="text-[13px] font-semibold text-slate-700">{cfg.title}</h3>
-        <span className="ml-auto text-[11px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{triggers.length}</span>
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.24, delay: 0.05 * index, ease }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <div style={{ width: 8, height: 8, borderRadius: 9999, background: cfg.color, flexShrink: 0 }} />
+        <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73", margin: 0 }}>
+          {cfg.title}
+        </p>
+        <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 600, color: "#86868B", background: "rgba(0,0,0,0.04)", borderRadius: 9999, padding: "1px 8px" }}>
+          {triggers.length}
+        </span>
       </div>
       <Droppable droppableId={columnId}>
         {(provided, snapshot) => (
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className="flex-1 rounded-xl min-h-[200px] p-2 transition-colors duration-150"
             style={{
-              background: snapshot.isDraggingOver ? `${cfg.accent}0D` : "rgba(248,250,252,0.8)",
-              border: snapshot.isDraggingOver ? `2px dashed ${cfg.accent}66` : "2px dashed transparent",
+              minHeight: 180, borderRadius: 10, padding: 8,
+              background: snapshot.isDraggingOver ? `${cfg.color}0A` : "rgba(0,0,0,0.02)",
+              border: snapshot.isDraggingOver ? `1px dashed ${cfg.color}44` : "1px dashed transparent",
+              transition: "all 150ms ease",
             }}
           >
             {triggers.length === 0 && !snapshot.isDraggingOver && (
-              <div className="flex items-center justify-center h-24">
-                <p className="text-[11px] text-slate-300">Sin elementos</p>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 80 }}>
+                <p style={{ fontSize: 13, color: "#AEAEB2" }}>Sin elementos</p>
               </div>
             )}
             {triggers.map((t, i) => <TriggerCard key={t.id} trigger={t} index={i} />)}
@@ -133,45 +135,33 @@ function KanbanColumn({ columnId, triggers, index }) {
   );
 }
 
-// ─── Cart Slot ──────────────────────────────────────────────────
-function CartSlot({ index, filled, onDeliver }) {
+function CartSlot({ index, filled, color, onDeliver }) {
   return (
     <motion.button
-      initial={{ opacity: 0, scale: 0.85 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: index * 0.05, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: index * 0.04, duration: 0.18, ease }}
       onClick={() => filled && onDeliver()}
       disabled={!filled}
-      className="relative flex flex-col items-center justify-center rounded-xl aspect-square transition-all duration-200 group"
-      style={filled ? {
-        background: "linear-gradient(145deg, #D1FAE5, #A7F3D0)",
-        border: "1.5px solid #34D399",
-        boxShadow: "0 2px 8px rgba(52,211,153,0.2)",
-        cursor: "pointer",
-      } : {
-        background: "#F8FAFC",
-        border: "1.5px dashed #CBD5E1",
-        cursor: "default",
-      }}
       whileHover={filled ? { scale: 1.04 } : {}}
-      whileTap={filled ? { scale: 0.96 } : {}}
+      whileTap={filled ? { scale: 0.97 } : {}}
+      style={{
+        aspectRatio: "1", borderRadius: 10,
+        border: filled ? `1px solid ${color}33` : "1px dashed rgba(0,0,0,0.10)",
+        background: filled ? `${color}0D` : "rgba(0,0,0,0.02)",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4,
+        cursor: filled ? "pointer" : "default",
+        transition: "all 120ms ease",
+      }}
     >
-      {filled ? (
-        <div className="flex flex-col items-center gap-1">
-          <ShoppingCart className="w-6 h-6 text-green-600" />
-          <span className="text-[8px] font-bold text-green-600/70 uppercase tracking-widest">Listo</span>
-          <div className="absolute inset-0 rounded-xl bg-green-900/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-1.5">
-            <span className="text-[8px] font-bold text-green-800 uppercase">Entregar</span>
-          </div>
-        </div>
-      ) : (
-        <span className="text-[9px] text-slate-300 font-medium">Vacío</span>
-      )}
+      {filled
+        ? <ShoppingCart size={16} style={{ color }} />
+        : <span style={{ fontSize: 10, color: "#AEAEB2" }}>—</span>
+      }
+      {filled && <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: `${color}99` }}>Listo</span>}
     </motion.button>
   );
 }
 
-// ─── Main Page ──────────────────────────────────────────────────
 export default function Kanban() {
   const queryClient = useQueryClient();
   const [lastMoved, setLastMoved] = useState(null);
@@ -202,31 +192,23 @@ export default function Kanban() {
     mutationFn: ({ id, data }) => base44.entities.Trigger.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["triggers"] }),
   });
-
   const updateKanban = useMutation({
     mutationFn: ({ id, data }) => base44.entities.CartInventory.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["cartInventory"] }),
   });
 
-  // One-timer: show fullscreen alert for first unseen unassigned trigger
   const shownRef = useRef(false);
   useEffect(() => {
     if (shownRef.current || triggers.length === 0) return;
     const seen = getSeenIds();
     const unseen = triggers.find((t) => t.status === "unassigned" && !seen.has(t.id));
-    if (unseen) {
-      shownRef.current = true;
-      setNewTriggerAlert(unseen);
-    }
+    if (unseen) { shownRef.current = true; setNewTriggerAlert(unseen); }
   }, [triggers]);
 
   const handleAlertOK = async () => {
     if (!newTriggerAlert) return;
     markSeen(newTriggerAlert.id);
-    await updateTrigger.mutateAsync({
-      id: newTriggerAlert.id,
-      data: { status: "in_progress" },
-    });
+    await updateTrigger.mutateAsync({ id: newTriggerAlert.id, data: { status: "in_progress" } });
     setNewTriggerAlert(null);
   };
 
@@ -242,17 +224,12 @@ export default function Kanban() {
     const newStatus = destination.droppableId;
     const trigger = triggers.find((t) => t.id === draggableId);
     if (!trigger || trigger.status === newStatus) return;
-
     const updateData = { status: newStatus };
     if (newStatus === "resolved") updateData.resolved_at = new Date().toISOString();
     else updateData.resolved_at = null;
-
     setLastMoved({ id: draggableId, from: source.droppableId, to: newStatus, part: trigger.part_number });
     setTimeout(() => setLastMoved(null), 2500);
-
     updateTrigger.mutate({ id: draggableId, data: updateData });
-
-    // Auto-descuento en inventario Kanban cuando se resuelve
     if (newStatus === "resolved" && kanbanInv && kanbanInv.current_carts > 0) {
       updateKanban.mutate({ id: kanbanInv.id, data: { current_carts: kanbanInv.current_carts - 1 } });
     }
@@ -292,53 +269,55 @@ export default function Kanban() {
   const reorder = kanbanInv?.reorder_point ?? 2;
   const isLow = current <= reorder;
   const pct = max > 0 ? current / max : 0;
-  const stockColor = current === 0 ? "#EF4444" : isLow ? "#F59E0B" : "#22C55E";
+  const stockColor = current === 0 ? "#FF3B30" : isLow ? "#FF9F0A" : "#34C759";
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20 lg:pb-8">
+    <div className="min-h-screen pb-24 lg:pb-10" style={{ background: "#FFFFFF" }}>
 
-      {/* ── Fullscreen New Trigger Alert ─────────────────────── */}
+      {/* ── New Trigger Alert Modal ── */}
       <AnimatePresence>
         {newTriggerAlert && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/40 backdrop-blur-md" />
-            <motion.div initial={{ opacity: 0, scale: 0.9, y: 40 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 40 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="fixed inset-0 z-50" style={{ background: "rgba(0,0,0,0.40)", backdropFilter: "blur(12px)" }} />
+            <motion.div initial={{ opacity: 0, scale: 0.93, y: 24 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.93, y: 24 }} transition={{ duration: 0.24, ease }}
               className="fixed inset-0 z-50 flex items-center justify-center px-5">
-              <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
-                <div className="bg-red-50 border-b border-red-100 px-6 pt-8 pb-6 text-center">
-                  <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 1.2, repeat: Infinity }}
-                    className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-                    <Bell className="w-8 h-8 text-red-500" />
+              <div style={{ width: "100%", maxWidth: 360, background: "#FFFFFF", borderRadius: 14, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
+                <div style={{ background: "rgba(255,59,48,0.08)", borderBottom: "1px solid rgba(255,59,48,0.16)", padding: "32px 24px 24px", textAlign: "center" }}>
+                  <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 1.4, repeat: Infinity }}
+                    style={{ width: 56, height: 56, borderRadius: 9999, background: "rgba(255,59,48,0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                    <Bell size={24} style={{ color: "#FF3B30" }} />
                   </motion.div>
-                  <h2 className="text-xl font-bold text-slate-900 mb-1">Nueva Alerta de Escasez</h2>
-                  <p className="text-sm text-slate-500">Se ha activado una solicitud de material</p>
+                  <h2 style={{ fontSize: 17, fontWeight: 500, color: "#1D1D1F", margin: "0 0 6px" }}>Nueva Alerta de Escasez</h2>
+                  <p style={{ fontSize: 15, color: "#6E6E73", margin: 0 }}>Se ha activado una solicitud de material</p>
                 </div>
-                <div className="px-6 py-5 space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-xs text-slate-400 uppercase tracking-wider">Línea</span>
-                    <span className="text-sm font-semibold text-slate-700">{newTriggerAlert.production_line}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-xs text-slate-400 uppercase tracking-wider">Material</span>
-                    <span className="text-sm font-mono font-semibold text-slate-700">{newTriggerAlert.part_number}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-xs text-slate-400 uppercase tracking-wider">Hora</span>
-                    <span className="text-sm font-semibold text-slate-700">
-                      {new Date(newTriggerAlert.triggered_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
+                  {[
+                    { label: "Línea",    value: newTriggerAlert.production_line, mono: false },
+                    { label: "Material", value: newTriggerAlert.part_number,     mono: true },
+                    { label: "Hora",     value: new Date(newTriggerAlert.triggered_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" }), mono: true },
+                  ].map((row) => (
+                    <div key={row.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73" }}>{row.label}</span>
+                      <span style={{ fontSize: row.mono ? 13 : 15, fontFamily: row.mono ? "'SF Mono','JetBrains Mono',monospace" : "inherit", color: row.mono ? "#0071E3" : "#1D1D1F" }}>
+                        {row.value}
+                      </span>
+                    </div>
+                  ))}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73" }}>Criticidad</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.20)", color: "#FF3B30", borderRadius: 6, padding: "3px 10px" }}>
+                      HIGH
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-xs text-slate-400 uppercase tracking-wider">Criticidad</span>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-600">HIGH</span>
-                  </div>
                 </div>
-                <div className="px-6 pb-6">
+                <div style={{ padding: "0 24px 24px" }}>
                   <button onClick={handleAlertOK}
-                    className="w-full h-12 rounded-2xl bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
-                    <CheckCircle2 className="w-4 h-4" />
+                    style={{ width: "100%", height: 48, borderRadius: 10, background: "#1D1D1F", color: "#FFFFFF", fontSize: 15, fontWeight: 500, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "background 150ms ease" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "#2D2D2F"}
+                    onMouseLeave={e => e.currentTarget.style.background = "#1D1D1F"}>
+                    <CheckCircle2 size={16} />
                     OK — Entendido, tomando atención
                   </button>
                 </div>
@@ -348,50 +327,64 @@ export default function Kanban() {
         )}
       </AnimatePresence>
 
-      {/* ── Header ───────────────────────────────────────────── */}
-      <div className="px-6 pt-8 pb-4">
-        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.2em] mb-1">Sistema de Control</p>
-        <div className="flex items-start justify-between">
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Kanban</h1>
-          <button onClick={() => setShowClearConfirm(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-red-500 bg-red-50 border border-red-200 hover:bg-red-100 transition-colors">
-            <Trash2 className="w-3.5 h-3.5" />
-            Limpiar
+      {/* ── Header ── */}
+      <div style={{ padding: "40px 40px 0" }}>
+        <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "#6E6E73", textTransform: "uppercase", marginBottom: 8 }}>
+          Sistema de Control
+        </p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em", color: "#1D1D1F", margin: 0 }}>
+            Kanban
+          </h1>
+          <button
+            onClick={() => setShowClearConfirm(true)}
+            style={{ display: "flex", alignItems: "center", gap: 6, height: 36, padding: "0 14px", borderRadius: 10, background: "transparent", border: "1px solid rgba(0,0,0,0.10)", fontSize: 13, fontWeight: 400, color: "#FF3B30", cursor: "pointer", transition: "background 120ms ease" }}
+            onMouseEnter={e => e.currentTarget.style.background = "rgba(255,59,48,0.06)"}
+            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+          >
+            <Trash2 size={13} />
+            Limpiar todo
           </button>
         </div>
       </div>
 
-      {/* ── KPI Bar ──────────────────────────────────────────── */}
-      <div className="px-6 mb-6">
+      {/* ── KPI Bar ── */}
+      <div style={{ padding: "24px 40px 0" }}>
         <AlertKPIBar triggers={triggers} />
       </div>
 
-      {/* ── Pipeline ─────────────────────────────────────────── */}
-      <div className="px-6 mb-8">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-slate-700">Pipeline de Alertas</h2>
-          <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-[11px] text-slate-400">En vivo · {triggers.length} alertas</span>
+      {/* ── Pipeline ── */}
+      <div style={{ padding: "32px 40px 0" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73", margin: 0 }}>
+            Pipeline de Alertas
+          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <motion.div style={{ width: 8, height: 8, borderRadius: 9999, background: "#34C759" }}
+              animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 2, repeat: Infinity }} />
+            <span style={{ fontSize: 12, fontFamily: "'SF Mono','JetBrains Mono',monospace", color: "#86868B" }}>
+              En vivo · {triggers.length} alertas
+            </span>
           </div>
         </div>
 
         <AnimatePresence>
           {lastMoved && (
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-              className="mb-3 flex items-center gap-2 rounded-xl px-4 py-2.5 bg-white border border-slate-200 shadow-sm">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-xs text-slate-600">
-                <span className="font-mono font-semibold text-slate-800">{lastMoved.part}</span>
-                {" → "}
-                <span className="font-semibold">{colCfg[lastMoved.to]?.title}</span>
+              transition={{ duration: 0.18, ease }}
+              style={{ background: "rgba(0,113,227,0.06)", border: "1px solid rgba(0,113,227,0.15)", borderRadius: 10, padding: "10px 16px", display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+              <div style={{ width: 8, height: 8, borderRadius: 9999, background: "#34C759" }} />
+              <span style={{ fontSize: 13, color: "#1D1D1F" }}>
+                <span style={{ fontFamily: "'SF Mono','JetBrains Mono',monospace", color: "#0071E3" }}>{lastMoved.part}</span>
+                <span style={{ color: "#86868B", margin: "0 6px" }}>→</span>
+                <span style={{ fontWeight: 500 }}>{colCfg[lastMoved.to]?.title}</span>
               </span>
             </motion.div>
           )}
         </AnimatePresence>
 
         <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 24 }}>
             {["unassigned", "in_progress", "resolved"].map((col, i) => (
               <KanbanColumn key={col} columnId={col} triggers={columns[col]} index={i} />
             ))}
@@ -399,105 +392,113 @@ export default function Kanban() {
         </DragDropContext>
       </div>
 
-      {/* ── Zona Kanban Inventory ─────────────────────────────── */}
-      <div className="px-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-slate-700">Zona Kanban — Stock de Carritos</h2>
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold"
-            style={{ background: `${stockColor}15`, color: stockColor, border: `1px solid ${stockColor}33` }}>
-            <motion.div animate={{ opacity: isLow ? [1, 0.3, 1] : 1 }} transition={{ duration: 1.5, repeat: Infinity }}
-              className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: stockColor }} />
-            {current === 0 ? "Sin stock" : isLow ? "Stock bajo" : "Operacional"}
+      {/* ── Kanban Stock ── */}
+      <div style={{ padding: "40px 40px 0" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73", margin: 0 }}>
+            Zona Kanban — Stock de Carritos
+          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, background: `${stockColor}0D`, border: `1px solid ${stockColor}22`, borderRadius: 9999, padding: "4px 10px" }}>
+            <motion.div style={{ width: 8, height: 8, borderRadius: 9999, background: stockColor }}
+              animate={{ opacity: isLow ? [1, 0.3, 1] : 1 }} transition={{ duration: 1.5, repeat: Infinity }} />
+            <span style={{ fontSize: 12, fontWeight: 600, color: stockColor, letterSpacing: "0.04em" }}>
+              {current === 0 ? "Sin stock" : isLow ? "Stock bajo" : "Operacional"}
+            </span>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-5">
-          <div className="flex items-center justify-between mb-4">
+        <div style={{ border: "0.5px solid rgba(0,0,0,0.08)", borderRadius: 14, padding: 24, background: "#FFFFFF" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 20 }}>
             <div>
-              <p className="text-sm font-semibold text-slate-700">{current} de {max} carritos disponibles</p>
-              <p className="text-xs text-slate-400 mt-0.5">Toca un slot lleno para registrar entrega</p>
+              <p style={{ fontSize: 15, color: "#1D1D1F", margin: 0 }}>{current} de {max} carritos</p>
+              <p style={{ fontSize: 12, color: "#86868B", marginTop: 4 }}>Toca un slot para registrar entrega</p>
             </div>
-            <div className="text-3xl font-black tabular-nums" style={{ color: stockColor }}>{current}</div>
+            <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", color: stockColor, fontVariantNumeric: "tabular-nums" }}>{current}</span>
           </div>
 
-          <div className="grid grid-cols-6 gap-2.5 mb-4">
+          <div style={{ display: "grid", gridTemplateColumns: `repeat(${max}, 1fr)`, gap: 8, marginBottom: 20 }}>
             {Array.from({ length: max }).map((_, i) => (
-              <CartSlot key={i} index={i} filled={i < current} onDeliver={() => setShowDeliverConfirm(true)} />
+              <CartSlot key={i} index={i} filled={i < current} color={stockColor} onDeliver={() => setShowDeliverConfirm(true)} />
             ))}
           </div>
 
-          <div>
-            <div className="flex justify-between mb-1.5">
-              <span className="text-[10px] text-slate-400 uppercase tracking-widest">Nivel</span>
-              <span className="text-[11px] font-bold tabular-nums" style={{ color: stockColor }}>{Math.round(pct * 100)}%</span>
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73" }}>Nivel</span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: stockColor, fontVariantNumeric: "tabular-nums" }}>{Math.round(pct * 100)}%</span>
             </div>
-            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-              <motion.div animate={{ width: `${pct * 100}%` }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                className="h-full rounded-full" style={{ background: `linear-gradient(90deg, ${stockColor}80, ${stockColor})` }} />
+            <div style={{ height: 4, background: "rgba(0,0,0,0.06)", borderRadius: 9999, overflow: "hidden" }}>
+              <motion.div animate={{ width: `${pct * 100}%` }} transition={{ duration: 0.7, ease }}
+                style={{ height: "100%", background: stockColor, borderRadius: 9999 }} />
             </div>
-            <div className="flex justify-between mt-1">
-              <span className="text-[10px] text-slate-300">0</span>
-              <span className="text-[10px] text-slate-400">Reorden: {reorder}</span>
-              <span className="text-[10px] text-slate-300">{max}</span>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+              <span style={{ fontSize: 11, color: "#AEAEB2" }}>0</span>
+              <span style={{ fontSize: 11, color: "#86868B" }}>Reorden: {reorder}</span>
+              <span style={{ fontSize: 11, color: "#AEAEB2" }}>{max}</span>
             </div>
           </div>
 
-          <div className="mt-4 flex gap-2">
-            <button onClick={() => setShowDeliverConfirm(true)} disabled={current === 0}
-              className="flex-1 h-10 rounded-[10px] text-[13px] font-medium border transition-colors duration-150 disabled:opacity-30 flex items-center justify-center gap-2"
-              style={{ background: "transparent", border: "1px solid rgba(0,0,0,0.12)", color: "#1D1D1F" }}
-              onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.04)"}
-              onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-              <Send className="w-3.5 h-3.5" />
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => setShowDeliverConfirm(true)}
+              disabled={current === 0}
+              style={{ flex: 1, height: 40, borderRadius: 10, border: "1px solid rgba(0,0,0,0.10)", background: "transparent", fontSize: 13, fontWeight: 400, color: "#1D1D1F", cursor: current === 0 ? "not-allowed" : "pointer", opacity: current === 0 ? 0.35 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "background 120ms ease" }}
+              onMouseEnter={e => { if (current > 0) e.currentTarget.style.background = "rgba(0,0,0,0.04)"; }}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+            >
+              <Minus size={14} />
               Entrega manual
             </button>
-            <button onClick={() => setShowRequestModal(true)}
-              className="flex-1 h-10 rounded-[10px] text-[13px] font-medium text-white transition-colors duration-150 flex items-center justify-center gap-2"
-              style={{ background: "#1D1D1F" }}
+            <button
+              onClick={() => setShowRequestModal(true)}
+              style={{ flex: 1, height: 40, borderRadius: 10, border: "none", background: "#1D1D1F", fontSize: 13, fontWeight: 500, color: "#FFFFFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "background 150ms ease" }}
               onMouseEnter={e => e.currentTarget.style.background = "#2D2D2F"}
-              onMouseLeave={e => e.currentTarget.style.background = "#1D1D1F"}>
-              <Plus className="w-3.5 h-3.5" />
+              onMouseLeave={e => e.currentTarget.style.background = "#1D1D1F"}
+            >
+              <Plus size={14} />
               Solicitar a Sopladora 1
             </button>
           </div>
         </div>
       </div>
 
-      {/* ── Deliver Confirm ──────────────────────────────────── */}
+      {/* ── Deliver Confirm ── */}
       <AnimatePresence>
         {showDeliverConfirm && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" onClick={() => !delivering && setShowDeliverConfirm(false)} />
-            <motion.div initial={{ opacity: 0, scale: 0.92, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.92, y: 20 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-0 flex items-center justify-center z-50 px-4">
-              <div className="w-full max-w-sm bg-white rounded-3xl p-7 shadow-2xl">
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center">
-                    <CheckCircle2 className="w-6 h-6 text-green-600" />
+              className="fixed inset-0 z-40" style={{ background: "rgba(0,0,0,0.30)", backdropFilter: "blur(8px)" }}
+              onClick={() => !delivering && setShowDeliverConfirm(false)} />
+            <motion.div initial={{ opacity: 0, scale: 0.93, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.93, y: 16 }} transition={{ duration: 0.24, ease }}
+              className="fixed inset-0 z-50 flex items-center justify-center px-5">
+              <div style={{ width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 14, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.15)" }}>
+                <div style={{ padding: "24px 24px 16px" }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73", marginBottom: 6 }}>Confirmar entrega</p>
+                  <h3 style={{ fontSize: 17, fontWeight: 500, color: "#1D1D1F", margin: 0 }}>Se descontará 1 carrito</h3>
+                </div>
+                <div style={{ padding: "0 24px 16px", display: "flex", flexDirection: "column", gap: 6 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", background: "rgba(0,0,0,0.03)", borderRadius: 10, padding: "10px 14px" }}>
+                    <span style={{ fontSize: 13, color: "#6E6E73" }}>Stock actual</span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: "#1D1D1F" }}>{current} carritos</span>
                   </div>
-                  <div>
-                    <p className="text-base font-bold text-slate-900">Confirmar Entrega</p>
-                    <p className="text-xs text-slate-500 mt-0.5">Se descontará 1 carrito del stock</p>
+                  <div style={{ display: "flex", justifyContent: "space-between", background: "rgba(0,0,0,0.03)", borderRadius: 10, padding: "10px 14px" }}>
+                    <span style={{ fontSize: 13, color: "#6E6E73" }}>Después</span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: (current - 1) <= reorder ? "#FF9F0A" : "#34C759" }}>{current - 1} carritos</span>
                   </div>
                 </div>
-                <div className="rounded-xl bg-slate-50 px-4 py-3 mb-5 space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-xs text-slate-400">Stock actual</span>
-                    <span className="text-sm font-bold text-slate-800">{current} carritos</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-xs text-slate-400">Después</span>
-                    <span className="text-sm font-bold" style={{ color: (current - 1) <= reorder ? "#F59E0B" : "#22C55E" }}>{current - 1} carritos</span>
-                  </div>
-                </div>
-                <div className="flex gap-3">
+                <div style={{ padding: "0 24px 24px", display: "flex", gap: 8 }}>
                   <button onClick={() => setShowDeliverConfirm(false)} disabled={delivering}
-                    className="flex-1 h-11 rounded-2xl text-sm font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">Cancelar</button>
+                    style={{ flex: 1, height: 40, borderRadius: 10, border: "1px solid rgba(0,0,0,0.10)", background: "transparent", fontSize: 13, color: "#1D1D1F", cursor: "pointer", transition: "background 120ms ease" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.04)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    Cancelar
+                  </button>
                   <button onClick={handleDeliver} disabled={delivering}
-                    className="flex-1 h-11 rounded-2xl text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
-                    {delivering ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                    style={{ flex: 1, height: 40, borderRadius: 10, border: "none", background: "#1D1D1F", fontSize: 13, fontWeight: 500, color: "white", cursor: delivering ? "not-allowed" : "pointer", opacity: delivering ? 0.35 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "background 150ms ease" }}
+                    onMouseEnter={e => { if (!delivering) e.currentTarget.style.background = "#2D2D2F"; }}
+                    onMouseLeave={e => e.currentTarget.style.background = "#1D1D1F"}>
+                    {delivering ? <RefreshCw size={13} style={{ animation: "spin 0.7s linear infinite" }} /> : <CheckCircle2 size={14} />}
                     Confirmar
                   </button>
                 </div>
@@ -507,54 +508,50 @@ export default function Kanban() {
         )}
       </AnimatePresence>
 
-      {/* ── Request Sopladora Modal ───────────────────────────── */}
+      {/* ── Request Sopladora Modal ── */}
       <AnimatePresence>
         {showRequestModal && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" onClick={() => !requesting && setShowRequestModal(false)} />
+              className="fixed inset-0 z-40" style={{ background: "rgba(0,0,0,0.30)", backdropFilter: "blur(8px)" }}
+              onClick={() => !requesting && setShowRequestModal(false)} />
             <motion.div initial={{ opacity: 0, scale: 0.93, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.93, y: 16 }} transition={{ duration: 0.24, ease: [0.25, 0.1, 0.25, 1] }}
-              className="fixed inset-0 flex items-center justify-center z-50 px-5">
-              <div className="w-full max-w-xs bg-white rounded-[14px] overflow-hidden shadow-xl" style={{ border: "0.5px solid rgba(0,0,0,0.08)" }}>
-                {/* Header */}
-                <div className="px-6 pt-6 pb-5 border-b" style={{ borderColor: "rgba(0,0,0,0.06)" }}>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] mb-1" style={{ color: "#6E6E73" }}>Solicitud de Producción</p>
-                  <h3 className="text-[17px] font-medium" style={{ color: "#1D1D1F" }}>Pedir carritos a Sopladora 1</h3>
+              exit={{ opacity: 0, scale: 0.93, y: 16 }} transition={{ duration: 0.24, ease }}
+              className="fixed inset-0 z-50 flex items-center justify-center px-5">
+              <div style={{ width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 14, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.15)" }}>
+                <div style={{ padding: "24px 24px 20px", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73", marginBottom: 6 }}>Solicitud de Producción</p>
+                  <h3 style={{ fontSize: 17, fontWeight: 500, color: "#1D1D1F", margin: 0 }}>Pedir carritos a Sopladora 1</h3>
                 </div>
-
-                {/* Quantity selector */}
-                <div className="px-6 py-5">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] mb-3" style={{ color: "#6E6E73" }}>Cantidad de carritos</p>
-                  <div className="flex items-center justify-between rounded-[10px] px-4 py-3" style={{ background: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.08)" }}>
-                    <button
-                      onClick={() => setRequestQty(q => Math.max(1, q - 1))}
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-lg font-medium transition-colors"
-                      style={{ color: "#1D1D1F", background: "white", border: "1px solid rgba(0,0,0,0.10)" }}
-                    >−</button>
-                    <span className="text-[28px] font-bold tabular-nums" style={{ color: "#1D1D1F" }}>{requestQty}</span>
-                    <button
-                      onClick={() => setRequestQty(q => Math.min(max, q + 1))}
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-lg font-medium transition-colors"
-                      style={{ color: "#1D1D1F", background: "white", border: "1px solid rgba(0,0,0,0.10)" }}
-                    >+</button>
+                <div style={{ padding: "20px 24px" }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73", marginBottom: 10 }}>Cantidad de carritos</p>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(0,0,0,0.04)", borderRadius: 10, padding: "10px 16px", border: "1px solid rgba(0,0,0,0.08)" }}>
+                    <button onClick={() => setRequestQty(q => Math.max(1, q - 1))}
+                      style={{ width: 32, height: 32, borderRadius: 9999, background: "white", border: "1px solid rgba(0,0,0,0.10)", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#1D1D1F" }}>
+                      −
+                    </button>
+                    <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", color: "#1D1D1F", fontVariantNumeric: "tabular-nums" }}>{requestQty}</span>
+                    <button onClick={() => setRequestQty(q => Math.min(max, q + 1))}
+                      style={{ width: 32, height: 32, borderRadius: 9999, background: "white", border: "1px solid rgba(0,0,0,0.10)", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#1D1D1F" }}>
+                      +
+                    </button>
                   </div>
-                  <p className="text-[12px] mt-2" style={{ color: "#86868B" }}>
+                  <p style={{ fontSize: 12, color: "#86868B", marginTop: 8 }}>
                     Zona Kanban tiene {current} de {max} carritos actualmente.
                   </p>
                 </div>
-
-                {/* Actions */}
-                <div className="px-6 pb-6 flex gap-2">
+                <div style={{ padding: "0 24px 24px", display: "flex", gap: 8 }}>
                   <button onClick={() => setShowRequestModal(false)} disabled={requesting}
-                    className="flex-1 h-10 rounded-[10px] text-[13px] font-medium transition-colors duration-150"
-                    style={{ background: "transparent", border: "1px solid rgba(0,0,0,0.12)", color: "#1D1D1F" }}>
+                    style={{ flex: 1, height: 40, borderRadius: 10, border: "1px solid rgba(0,0,0,0.10)", background: "transparent", fontSize: 13, color: "#1D1D1F", cursor: "pointer", transition: "background 120ms ease" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.04)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                     Cancelar
                   </button>
                   <button onClick={handleRequestSopladora} disabled={requesting}
-                    className="flex-1 h-10 rounded-[10px] text-[13px] font-medium text-white flex items-center justify-center gap-2 transition-colors duration-150"
-                    style={{ background: "#1D1D1F", opacity: requesting ? 0.35 : 1 }}>
-                    {requesting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                    style={{ flex: 1, height: 40, borderRadius: 10, border: "none", background: "#1D1D1F", fontSize: 13, fontWeight: 500, color: "white", cursor: requesting ? "not-allowed" : "pointer", opacity: requesting ? 0.35 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "background 150ms ease" }}
+                    onMouseEnter={e => { if (!requesting) e.currentTarget.style.background = "#2D2D2F"; }}
+                    onMouseLeave={e => e.currentTarget.style.background = "#1D1D1F"}>
+                    {requesting ? <RefreshCw size={13} style={{ animation: "spin 0.7s linear infinite" }} /> : <Send size={14} />}
                     Enviar solicitud
                   </button>
                 </div>
@@ -564,31 +561,38 @@ export default function Kanban() {
         )}
       </AnimatePresence>
 
-      {/* ── Clear All Confirm ─────────────────────────────────── */}
+      {/* ── Clear All Confirm ── */}
       <AnimatePresence>
         {showClearConfirm && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" onClick={() => !clearing && setShowClearConfirm(false)} />
-            <motion.div initial={{ opacity: 0, scale: 0.92, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.92, y: 20 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-0 flex items-center justify-center z-50 px-4">
-              <div className="w-full max-w-sm bg-white rounded-3xl p-7 shadow-2xl">
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center">
-                    <AlertTriangle className="w-6 h-6 text-red-500" />
-                  </div>
-                  <div>
-                    <p className="text-base font-bold text-slate-900">Limpiar todas las alertas</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{triggers.length} alertas serán eliminadas permanentemente</p>
+              className="fixed inset-0 z-40" style={{ background: "rgba(0,0,0,0.30)", backdropFilter: "blur(8px)" }}
+              onClick={() => !clearing && setShowClearConfirm(false)} />
+            <motion.div initial={{ opacity: 0, scale: 0.93, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.93, y: 16 }} transition={{ duration: 0.24, ease }}
+              className="fixed inset-0 z-50 flex items-center justify-center px-5">
+              <div style={{ width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 14, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.15)" }}>
+                <div style={{ padding: "24px 24px 16px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.16)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <AlertTriangle size={16} style={{ color: "#FF3B30" }} />
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 15, fontWeight: 500, color: "#1D1D1F", margin: 0 }}>Limpiar todas las alertas</p>
+                      <p style={{ fontSize: 12, color: "#86868B", marginTop: 2 }}>{triggers.length} alertas eliminadas permanentemente</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex gap-3">
+                <div style={{ padding: "0 24px 24px", display: "flex", gap: 8 }}>
                   <button onClick={() => setShowClearConfirm(false)} disabled={clearing}
-                    className="flex-1 h-11 rounded-2xl text-sm font-semibold text-slate-500 bg-slate-100">Cancelar</button>
+                    style={{ flex: 1, height: 40, borderRadius: 10, border: "1px solid rgba(0,0,0,0.10)", background: "transparent", fontSize: 13, color: "#1D1D1F", cursor: "pointer", transition: "background 120ms ease" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.04)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    Cancelar
+                  </button>
                   <button onClick={handleClearAll} disabled={clearing}
-                    className="flex-1 h-11 rounded-2xl text-sm font-bold text-red-600 bg-red-50 border border-red-200 flex items-center justify-center gap-2">
-                    {clearing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                    style={{ flex: 1, height: 40, borderRadius: 10, border: "1px solid rgba(255,59,48,0.25)", background: "rgba(255,59,48,0.08)", fontSize: 13, fontWeight: 500, color: "#FF3B30", cursor: clearing ? "not-allowed" : "pointer", opacity: clearing ? 0.35 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all 120ms ease" }}>
+                    {clearing ? <RefreshCw size={13} style={{ animation: "spin 0.7s linear infinite" }} /> : <Trash2 size={14} />}
                     Eliminar todo
                   </button>
                 </div>
@@ -597,6 +601,8 @@ export default function Kanban() {
           </>
         )}
       </AnimatePresence>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
