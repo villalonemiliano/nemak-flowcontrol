@@ -2,7 +2,8 @@ import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertTriangle, Send, CheckCircle2, Package, Activity } from "lucide-react";
+import { AlertTriangle, Send, CheckCircle2, Activity } from "lucide-react";
+import WaterJacketIcon from "@/components/WaterJacketIcon";
 
 const PRODUCTION_LINE = "Sopladora 3 Línea H2";
 const PART_NUMBER = "Carrito Misceláneo: WATER JACKET";
@@ -151,8 +152,8 @@ export default function TriggerPortal() {
 
                 {/* Part number */}
                 <div style={{ border: "0.5px solid rgba(0,0,0,0.08)", borderRadius: 14, padding: "16px 20px", background: "#FFFFFF", display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,59,48,0.08)", border: "1px solid rgba(255,59,48,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Package size={16} style={{ color: "#FF3B30" }} />
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(200,140,80,0.08)", border: "1px solid rgba(200,140,80,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <WaterJacketIcon size={20} animated={false} />
                   </div>
                   <div>
                     <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: "#6E6E73", textTransform: "uppercase", marginBottom: 4 }}>
