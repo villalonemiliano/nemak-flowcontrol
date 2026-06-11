@@ -3,7 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, AlertTriangle, Clock, Bell, CheckCircle2, ShoppingCart, Send, RefreshCw, Plus, Minus, Package } from "lucide-react";
+import { Trash2, AlertTriangle, Clock, Bell, CheckCircle2, Send, RefreshCw, Plus, Minus } from "lucide-react";
+import WaterJacketIcon from "@/components/WaterJacketIcon";
 import AlertKPIBar from "@/components/kanban/AlertKPIBar";
 
 const ease = [0.25, 0.1, 0.25, 1];
@@ -76,9 +77,18 @@ function TriggerCard({ trigger, index }) {
               {trigger.criticality}
             </span>
           </div>
-          <p style={{ fontSize: 13, fontWeight: 500, fontFamily: "'SF Mono','JetBrains Mono',monospace", color: "#0071E3", margin: "0 0 8px" }}>
-            {trigger.part_number}
-          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 8px" }}>
+            {trigger.part_number?.toLowerCase().includes("water jacket") && (
+              <img
+                src="https://media.base44.com/images/public/6a25d4acd913cf2dc74e56fc/2cee4b677_image.png"
+                alt="Water Jacket"
+                style={{ width: 28, height: "auto", objectFit: "contain", opacity: 0.85 }}
+              />
+            )}
+            <p style={{ fontSize: 13, fontWeight: 500, fontFamily: "'SF Mono','JetBrains Mono',monospace", color: "#0071E3", margin: 0 }}>
+              {trigger.part_number}
+            </p>
+          </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 8, borderTop: "1px solid rgba(0,0,0,0.06)" }}>
             <span style={{ fontSize: 12, fontFamily: "'SF Mono','JetBrains Mono',monospace", color: "#86868B" }}>
               {new Date(trigger.triggered_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
@@ -153,11 +163,12 @@ function CartSlot({ index, filled, color, onDeliver }) {
         transition: "all 120ms ease",
       }}
     >
-      {filled
-        ? <ShoppingCart size={16} style={{ color }} />
-        : <span style={{ fontSize: 10, color: "#AEAEB2" }}>—</span>
-      }
-      {filled && <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: `${color}99` }}>Listo</span>}
+      <img
+        src="https://media.base44.com/images/public/6a25d4acd913cf2dc74e56fc/2cee4b677_image.png"
+        alt="Water Jacket"
+        style={{ width: "70%", height: "auto", objectFit: "contain", opacity: filled ? 0.9 : 0.15, filter: filled ? "none" : "grayscale(1)" }}
+      />
+      {filled && <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: `${color}99` }}>WJ</span>}
     </motion.button>
   );
 }
@@ -588,14 +599,23 @@ export default function Kanban() {
                     transition: "box-shadow 200ms ease, border 200ms ease",
                   }}
                 >
-                  <ShoppingCart size={18} style={{ color: isFilled ? stockColor : "rgba(255,255,255,0.15)", filter: isFilled ? `drop-shadow(0 0 6px ${stockColor})` : "none" }} />
+                  <img
+                    src="https://media.base44.com/images/public/6a25d4acd913cf2dc74e56fc/2cee4b677_image.png"
+                    alt="Water Jacket"
+                    style={{
+                      width: "70%", height: "auto", objectFit: "contain",
+                      opacity: isFilled ? 1 : 0.15,
+                      filter: isFilled ? `drop-shadow(0 0 5px ${stockColor}80)` : "grayscale(1)",
+                      transition: "opacity 200ms ease, filter 200ms ease",
+                    }}
+                  />
                   {isFilled && (
                     <motion.span
                       animate={{ opacity: [0.6, 1, 0.6] }}
                       transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.15 }}
-                      style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: `${stockColor}CC` }}
+                      style={{ fontSize: 7, fontWeight: 700, letterSpacing: "0.10em", textTransform: "uppercase", color: `${stockColor}CC` }}
                     >
-                      LISTO
+                      WJ
                     </motion.span>
                   )}
                 </motion.button>

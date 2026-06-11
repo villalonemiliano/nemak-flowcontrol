@@ -2,7 +2,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { ShoppingCart, RefreshCw, Minus, Plus, AlertTriangle } from "lucide-react";
+import { RefreshCw, Minus, Plus, AlertTriangle } from "lucide-react";
+import WaterJacketIcon from "@/components/WaterJacketIcon";
 
 const ease = [0.25, 0.1, 0.25, 1];
 
@@ -33,14 +34,23 @@ function CartSlot({ filled, index, color }) {
         willChange: "transform",
       }}
     >
-      <ShoppingCart size={16} style={{ color: filled ? color : "rgba(255,255,255,0.15)", filter: filled ? `drop-shadow(0 0 5px ${color})` : "none" }} />
+      <img
+        src="https://media.base44.com/images/public/6a25d4acd913cf2dc74e56fc/2cee4b677_image.png"
+        alt="Water Jacket"
+        style={{
+          width: "70%", height: "auto", objectFit: "contain",
+          opacity: filled ? 1 : 0.12,
+          filter: filled ? `drop-shadow(0 0 4px ${color}80)` : "grayscale(1)",
+          transition: "opacity 200ms ease, filter 200ms ease",
+        }}
+      />
       {filled && (
         <motion.span
           animate={{ opacity: [0.55, 1, 0.55] }}
           transition={{ duration: 2, repeat: Infinity, delay: index * 0.2 }}
           style={{ fontSize: 7, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: `${color}BB` }}
         >
-          OK
+          WJ
         </motion.span>
       )}
     </motion.div>
