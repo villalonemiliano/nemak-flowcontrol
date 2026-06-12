@@ -6,7 +6,10 @@
       "type": "string",
       "enum": [
         "sopladora",
-        "kanban"
+        "kanban",
+        "sopladora1",
+        "sopladora2",
+        "sopladora4"
       ],
       "description": "Zone where this inventory record belongs"
     },

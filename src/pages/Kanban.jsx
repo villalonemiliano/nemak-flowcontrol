@@ -548,15 +548,15 @@ export default function Kanban() {
         <div style={{
           borderRadius: 16,
           overflow: "hidden",
-          background: "#0F1117",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.06)",
-          border: `1px solid ${isLow ? "rgba(255,159,10,0.30)" : "rgba(255,255,255,0.06)"}`,
+          background: "#FFFFFF",
+          boxShadow: "0 2px 16px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.08)",
+          border: `1px solid ${isLow ? `${stockColor}35` : "rgba(0,0,0,0.07)"}`,
         }}>
-          {/* Header inside dark card */}
-          <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          {/* Header inside card */}
+          <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid rgba(0,0,0,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.40)", margin: "0 0 4px" }}>STOCK EN TIEMPO REAL</p>
-              <p style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.80)", margin: 0 }}>Toca un slot para registrar entrega</p>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#AEAEB2", margin: "0 0 4px" }}>STOCK EN TIEMPO REAL</p>
+              <p style={{ fontSize: 13, fontWeight: 500, color: "#3A3A3C", margin: 0 }}>Toca un slot para registrar entrega</p>
             </div>
             <div style={{ textAlign: "right" }}>
               <motion.span
@@ -564,19 +564,18 @@ export default function Kanban() {
                 initial={{ scale: 0.8, opacity: 0.5 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.2 }}
-                style={{ fontSize: 40, fontWeight: 800, letterSpacing: "-0.04em", color: stockColor, fontVariantNumeric: "tabular-nums", lineHeight: 1, display: "block", textShadow: `0 0 20px ${stockColor}60` }}
+                style={{ fontSize: 40, fontWeight: 800, letterSpacing: "-0.04em", color: stockColor, fontVariantNumeric: "tabular-nums", lineHeight: 1, display: "block" }}
               >
                 {current}
               </motion.span>
-              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", fontVariantNumeric: "tabular-nums" }}>/ {max}</span>
+              <span style={{ fontSize: 12, color: "#AEAEB2", fontVariantNumeric: "tabular-nums" }}>/ {max}</span>
             </div>
           </div>
 
-          {/* LED Cart Grid */}
+          {/* Cart Grid */}
           <div style={{ padding: "20px 24px", display: "grid", gridTemplateColumns: `repeat(${max}, 1fr)`, gap: 10 }}>
             {Array.from({ length: max }).map((_, i) => {
               const isFilled = i < current;
-              const ledColor = isFilled ? stockColor : "rgba(255,255,255,0.06)";
               return (
                 <motion.button
                   key={i}
@@ -585,18 +584,18 @@ export default function Kanban() {
                   transition={{ delay: i * 0.06, duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                   onClick={() => isFilled && setShowDeliverConfirm(true)}
                   disabled={!isFilled}
-                  whileHover={isFilled ? { scale: 1.08 } : {}}
-                  whileTap={isFilled ? { scale: 0.93 } : {}}
+                  whileHover={isFilled ? { scale: 1.06 } : {}}
+                  whileTap={isFilled ? { scale: 0.94 } : {}}
                   style={{
                     aspectRatio: "1",
                     borderRadius: 12,
-                    border: isFilled ? `1px solid ${stockColor}50` : "1px solid rgba(255,255,255,0.08)",
-                    background: isFilled ? `${stockColor}18` : "rgba(255,255,255,0.03)",
+                    border: isFilled ? `1px solid ${stockColor}40` : "1px dashed rgba(0,0,0,0.10)",
+                    background: isFilled ? `${stockColor}0D` : "rgba(0,0,0,0.02)",
                     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
                     cursor: isFilled ? "pointer" : "default",
-                    boxShadow: isFilled ? `0 0 16px ${stockColor}30, inset 0 1px 0 rgba(255,255,255,0.10)` : "none",
+                    boxShadow: isFilled ? `0 2px 10px ${stockColor}20` : "none",
                     willChange: "transform",
-                    transition: "box-shadow 200ms ease, border 200ms ease",
+                    transition: "all 200ms ease",
                   }}
                 >
                   <img
@@ -604,8 +603,8 @@ export default function Kanban() {
                     alt="Water Jacket"
                     style={{
                       width: "70%", height: "auto", objectFit: "contain",
-                      opacity: isFilled ? 1 : 0.15,
-                      filter: isFilled ? `drop-shadow(0 0 5px ${stockColor}80)` : "grayscale(1)",
+                      opacity: isFilled ? 1 : 0.18,
+                      filter: isFilled ? "none" : "grayscale(1)",
                       transition: "opacity 200ms ease, filter 200ms ease",
                     }}
                   />
@@ -613,7 +612,7 @@ export default function Kanban() {
                     <motion.span
                       animate={{ opacity: [0.6, 1, 0.6] }}
                       transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.15 }}
-                      style={{ fontSize: 7, fontWeight: 700, letterSpacing: "0.10em", textTransform: "uppercase", color: `${stockColor}CC` }}
+                      style={{ fontSize: 7, fontWeight: 700, letterSpacing: "0.10em", textTransform: "uppercase", color: `${stockColor}AA` }}
                     >
                       WJ
                     </motion.span>
@@ -623,7 +622,7 @@ export default function Kanban() {
             })}
           </div>
 
-          {/* Low stock warning banner inside dark card */}
+          {/* Low stock warning */}
           <AnimatePresence>
             {isLow && (
               <motion.div
@@ -634,14 +633,14 @@ export default function Kanban() {
                 <motion.div
                   animate={{ opacity: [1, 0.7, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  style={{ background: "rgba(255,159,10,0.12)", border: "1px solid rgba(255,159,10,0.30)", borderRadius: 10, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}
+                  style={{ background: `${stockColor}0F`, border: `1px solid ${stockColor}35`, borderRadius: 10, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}
                 >
-                  <AlertTriangle size={14} style={{ color: "#FF9F0A", flexShrink: 0 }} />
+                  <AlertTriangle size={14} style={{ color: stockColor, flexShrink: 0 }} />
                   <div>
-                    <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#FF9F0A", margin: 0 }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: stockColor, margin: 0 }}>
                       ZONA KANBAN REQUIERE REPOSICIÓN
                     </p>
-                    <p style={{ fontSize: 11, color: "rgba(255,159,10,0.70)", marginTop: 2 }}>
+                    <p style={{ fontSize: 11, color: `${stockColor}99`, marginTop: 2 }}>
                       STOCK CRÍTICO: {current}/{max} — POR DEBAJO DEL PUNTO DE REORDEN
                     </p>
                   </div>
@@ -653,20 +652,20 @@ export default function Kanban() {
           {/* Progress bar */}
           <div style={{ padding: "0 24px 20px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.10em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)" }}>Nivel de stock</span>
+              <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.10em", textTransform: "uppercase", color: "#AEAEB2" }}>Nivel de stock</span>
               <span style={{ fontSize: 11, fontWeight: 700, color: stockColor, fontVariantNumeric: "tabular-nums" }}>{Math.round(pct * 100)}%</span>
             </div>
-            <div style={{ height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 9999, overflow: "hidden" }}>
+            <div style={{ height: 5, background: "rgba(0,0,0,0.06)", borderRadius: 9999, overflow: "hidden" }}>
               <motion.div
                 animate={{ width: `${pct * 100}%` }}
                 transition={{ duration: 0.8, ease }}
-                style={{ height: "100%", background: `linear-gradient(90deg, ${stockColor}99, ${stockColor})`, borderRadius: 9999, boxShadow: `0 0 8px ${stockColor}60` }}
+                style={{ height: "100%", background: `linear-gradient(90deg, ${stockColor}88, ${stockColor})`, borderRadius: 9999 }}
               />
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
-              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.20)" }}>0</span>
-              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)" }}>Reorden: {reorder}</span>
-              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.20)" }}>{max}</span>
+              <span style={{ fontSize: 10, color: "#AEAEB2" }}>0</span>
+              <span style={{ fontSize: 10, color: "#AEAEB2" }}>Reorden: {reorder}</span>
+              <span style={{ fontSize: 10, color: "#AEAEB2" }}>{max}</span>
             </div>
           </div>
 
@@ -675,18 +674,18 @@ export default function Kanban() {
             <button
               onClick={() => setShowDeliverConfirm(true)}
               disabled={current === 0}
-              style={{ flex: 1, height: 42, borderRadius: 10, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", fontSize: 13, fontWeight: 500, color: current === 0 ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.80)", cursor: current === 0 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "background 150ms ease" }}
-              onMouseEnter={e => { if (current > 0) e.currentTarget.style.background = "rgba(255,255,255,0.10)"; }}
-              onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
+              style={{ flex: 1, height: 42, borderRadius: 10, border: "1px solid rgba(0,0,0,0.10)", background: "rgba(0,0,0,0.03)", fontSize: 13, fontWeight: 500, color: current === 0 ? "#AEAEB2" : "#1D1D1F", cursor: current === 0 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "background 150ms ease" }}
+              onMouseEnter={e => { if (current > 0) e.currentTarget.style.background = "rgba(0,0,0,0.07)"; }}
+              onMouseLeave={e => e.currentTarget.style.background = "rgba(0,0,0,0.03)"}
             >
               <Minus size={14} />
               Entrega manual
             </button>
             <button
               onClick={() => setShowRequestModal(true)}
-              style={{ flex: 1, height: 42, borderRadius: 10, border: "none", background: "#FFFFFF", fontSize: 13, fontWeight: 700, color: "#0F1117", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "background 150ms ease, opacity 150ms ease", letterSpacing: "0.02em" }}
-              onMouseEnter={e => e.currentTarget.style.background = "#E8E8ED"}
-              onMouseLeave={e => e.currentTarget.style.background = "#FFFFFF"}
+              style={{ flex: 1, height: 42, borderRadius: 10, border: "none", background: "#1D1D1F", fontSize: 13, fontWeight: 700, color: "#FFFFFF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "background 150ms ease", letterSpacing: "0.02em" }}
+              onMouseEnter={e => e.currentTarget.style.background = "#2D2D2F"}
+              onMouseLeave={e => e.currentTarget.style.background = "#1D1D1F"}
             >
               <Plus size={14} />
               Solicitar a Sopladora 12
