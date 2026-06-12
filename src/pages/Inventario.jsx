@@ -5,7 +5,7 @@ import { useState } from "react";
 import { RefreshCw, Minus, Plus, AlertTriangle } from "lucide-react";
 
 const ease = [0.25, 0.1, 0.25, 1];
-const WJ_IMG = "https://media.base44.com/images/public/6a25d4acd913cf2dc74e56fc/2cee4b677_image.png";
+const WJ_IMG = "https://media.base44.com/images/public/6a25d4acd913cf2dc74e56fc/5e2401881_image.png";
 
 function statusColor(current, reorder) {
   if (current === 0) return "#FF3B30";
@@ -31,7 +31,7 @@ function CartSlot({ filled, index, color }) {
     >
       <img
         src={WJ_IMG}
-        alt="Water Jacket"
+        alt="Liquid Jacket"
         style={{
           width: "70%", height: "auto", objectFit: "contain",
           opacity: filled ? 1 : 0.15,
@@ -194,11 +194,11 @@ function ZoneCard({ title, subtitle, inventory, onDecrease, onIncrease, isUpdati
 }
 
 const ZONE_CONFIG = [
-  { zone: "sopladora",  title: "Sopladora 3 — Línea H2",  subtitle: "Cap. 3 carritos · Reorden: 1",  defaultMax: 3 },
-  { zone: "sopladora1", title: "Sopladora 1 — Línea H2",  subtitle: "Cap. 4 carritos · Reorden: 1",  defaultMax: 4 },
-  { zone: "sopladora2", title: "Sopladora 2 — Línea H2",  subtitle: "Cap. 4 carritos · Reorden: 1",  defaultMax: 4 },
-  { zone: "sopladora4", title: "Sopladora 4 — Línea H2",  subtitle: "Cap. 4 carritos · Reorden: 1",  defaultMax: 4 },
-  { zone: "kanban",     title: "Zona Kanban",              subtitle: "Cap. 6 carritos · Distribución misceláneos", defaultMax: 6 },
+  { zone: "sopladora",  title: "Máquina 3",  subtitle: "Cap. 3 carritos · Reorden: 1",  defaultMax: 3 },
+  { zone: "sopladora1", title: "Máquina 1",  subtitle: "Cap. 4 carritos · Reorden: 1",  defaultMax: 4 },
+  { zone: "sopladora2", title: "Máquina 2",  subtitle: "Cap. 4 carritos · Reorden: 1",  defaultMax: 4 },
+  { zone: "sopladora4", title: "Máquina 4",  subtitle: "Cap. 4 carritos · Reorden: 1",  defaultMax: 4 },
+  { zone: "kanban",     title: "Zona Kanban", subtitle: "Cap. 6 carritos · Distribución misceláneos", defaultMax: 6 },
 ];
 
 export default function Inventario() {

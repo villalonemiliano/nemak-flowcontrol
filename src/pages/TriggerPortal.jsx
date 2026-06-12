@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, Send, CheckCircle2, Activity } from "lucide-react";
 import WaterJacketIcon from "@/components/WaterJacketIcon";
 
-const PRODUCTION_LINE = "Sopladora 3 Línea H2";
-const PART_NUMBER = "Carrito Misceláneo: WATER JACKET";
+const PRODUCTION_LINE = "Máquina 3";
+const PART_NUMBER = "Carrito Misceláneo: LIQUID JACKET";
 
 const ease = [0.25, 0.1, 0.25, 1];
 
@@ -60,7 +60,7 @@ export default function TriggerPortal() {
           Alert Portal
         </h1>
         <p style={{ fontSize: 15, color: "#6E6E73", marginTop: 8 }}>
-          Notifica al equipo de Supply Chain de una escasez activa.
+          Notifica al equipo de gestión de una escasez activa.
         </p>
       </div>
 

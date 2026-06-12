@@ -78,10 +78,10 @@ function TriggerCard({ trigger, index }) {
             </span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 8px" }}>
-            {trigger.part_number?.toLowerCase().includes("water jacket") && (
+            {trigger.part_number?.toLowerCase().includes("liquid jacket") && (
               <img
-                src="https://media.base44.com/images/public/6a25d4acd913cf2dc74e56fc/2cee4b677_image.png"
-                alt="Water Jacket"
+                src="https://media.base44.com/images/public/6a25d4acd913cf2dc74e56fc/5e2401881_image.png"
+                alt="Liquid Jacket"
                 style={{ width: 28, height: "auto", objectFit: "contain", opacity: 0.85 }}
               />
             )}
@@ -164,8 +164,8 @@ function CartSlot({ index, filled, color, onDeliver }) {
       }}
     >
       <img
-        src="https://media.base44.com/images/public/6a25d4acd913cf2dc74e56fc/2cee4b677_image.png"
-        alt="Water Jacket"
+        src="https://media.base44.com/images/public/6a25d4acd913cf2dc74e56fc/5e2401881_image.png"
+        alt="Liquid Jacket"
         style={{ width: "70%", height: "auto", objectFit: "contain", opacity: filled ? 0.9 : 0.15, filter: filled ? "none" : "grayscale(1)" }}
       />
       {filled && <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: `${color}99` }}>WJ</span>}
@@ -286,6 +286,7 @@ export default function Kanban() {
       status: "pending",
       requested_at: new Date().toISOString(),
       notes: "Solicitud desde Zona Kanban",
+
     });
     setRequesting(false);
     setShowRequestModal(false);
@@ -504,7 +505,7 @@ export default function Kanban() {
                 <div key={order.id} style={{ border: "1px solid rgba(99,102,241,0.20)", borderLeft: "3px solid #6366F1", borderRadius: "0 10px 10px 0", padding: "14px 16px", background: "rgba(99,102,241,0.04)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
                   <div>
                     <p style={{ fontSize: 14, fontWeight: 500, color: "#1D1D1F", margin: 0 }}>
-                      {order.requested_carts} carrito{order.requested_carts !== 1 ? "s" : ""} de Sopladora 12 Línea C
+                      {order.requested_carts} carrito{order.requested_carts !== 1 ? "s" : ""} de Máquina 12 Línea C
                     </p>
                     <p style={{ fontSize: 12, fontFamily: "'SF Mono','JetBrains Mono',monospace", color: "#86868B", marginTop: 4 }}>
                       Enviado · {new Date(order.requested_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
@@ -599,7 +600,7 @@ export default function Kanban() {
                   }}
                 >
                   <img
-                    src="https://media.base44.com/images/public/6a25d4acd913cf2dc74e56fc/2cee4b677_image.png"
+                    src="https://media.base44.com/images/public/6a25d4acd913cf2dc74e56fc/5e2401881_image.png"
                     alt="Water Jacket"
                     style={{
                       width: "70%", height: "auto", objectFit: "contain",
@@ -688,7 +689,7 @@ export default function Kanban() {
               onMouseLeave={e => e.currentTarget.style.background = "#1D1D1F"}
             >
               <Plus size={14} />
-              Solicitar a Sopladora 12
+              Solicitar a Máquina 12
             </button>
           </div>
         </div>
@@ -753,7 +754,7 @@ export default function Kanban() {
               <div style={{ width: "100%", maxWidth: 340, background: "#FFFFFF", borderRadius: 14, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.15)" }}>
                 <div style={{ padding: "24px 24px 20px", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
                   <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73", marginBottom: 6 }}>Solicitud de Producción</p>
-                  <h3 style={{ fontSize: 17, fontWeight: 500, color: "#1D1D1F", margin: 0 }}>Pedir carritos a Sopladora 12 Línea C</h3>
+                  <h3 style={{ fontSize: 17, fontWeight: 500, color: "#1D1D1F", margin: 0 }}>Pedir carritos a Máquina 12 Línea C</h3>
                 </div>
                 <div style={{ padding: "20px 24px" }}>
                   <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6E6E73", marginBottom: 10 }}>Cantidad de carritos</p>

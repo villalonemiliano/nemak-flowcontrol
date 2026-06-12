@@ -1,12 +1,12 @@
 import { motion } from "framer-motion";
 
-const WATER_JACKET_IMAGE = "https://media.base44.com/images/public/6a25d4acd913cf2dc74e56fc/2cee4b677_image.png";
+const WATER_JACKET_IMAGE = "https://media.base44.com/images/public/6a25d4acd913cf2dc74e56fc/5e2401881_image.png";
 
 export default function WaterJacketIcon({ size = 24, animated = true }) {
   const Component = (
     <img
       src={WATER_JACKET_IMAGE}
-      alt="Water Jacket"
+      alt="Liquid Jacket"
       style={{
         width: size,
         height: size * 0.65,

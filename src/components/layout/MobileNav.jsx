@@ -1,8 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { AlertTriangle, LayoutDashboard, ShoppingCart, Factory } from "lucide-react";
 
-const NEMAK_LOGO = "https://media.base44.com/images/public/6a25d4acd913cf2dc74e56fc/b2f52ad75_image.png";
-
 export default function MobileNav() {
   const location = useLocation();
   const isActive = (path) => location.pathname === path;
@@ -17,7 +15,7 @@ export default function MobileNav() {
           borderBottom: "1px solid rgba(0,0,0,0.06)",
         }}
       >
-        <img src={NEMAK_LOGO} alt="Nemak" className="h-6 w-auto object-contain" style={{ maxWidth: "100px" }} />
+        <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: "0.06em", color: "#1D1D1F" }}>MGMT</span>
       </div>
 
       <div
@@ -32,7 +30,7 @@ export default function MobileNav() {
           { path: "/",           icon: AlertTriangle,   label: "Alerta" },
           { path: "/kanban",     icon: LayoutDashboard, label: "Kanban" },
           { path: "/inventario", icon: ShoppingCart,    label: "Inventario" },
-          { path: "/sopladora1", icon: Factory,         label: "Sop. 12C" },
+          { path: "/sopladora1", icon: Factory,         label: "Máq. 12C" },
         ].map((item) => {
           const active = isActive(item.path);
           return (

@@ -241,7 +241,7 @@ export default function Sopladora1() {
         </p>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h1 style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em", color: "#1D1D1F", margin: 0 }}>
-            Sopladora 12 Línea C
+            Máquina 12 Línea C
           </h1>
           <div style={{
             display: "flex", alignItems: "center", gap: 6,

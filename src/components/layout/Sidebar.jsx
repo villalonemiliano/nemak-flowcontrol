@@ -2,8 +2,6 @@ import { Link, useLocation } from "react-router-dom";
 import { AlertTriangle, LayoutDashboard, LogOut, ShoppingCart, Factory } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
-const NEMAK_LOGO = "https://media.base44.com/images/public/6a25d4acd913cf2dc74e56fc/b2f52ad75_image.png";
-
 export default function Sidebar() {
   const location = useLocation();
 
@@ -11,7 +9,7 @@ export default function Sidebar() {
     { path: "/",           icon: AlertTriangle,   label: "Trigger Portal" },
     { path: "/kanban",     icon: LayoutDashboard, label: "Kanban" },
     { path: "/inventario", icon: ShoppingCart,    label: "Inventario" },
-    { path: "/sopladora1", icon: Factory,         label: "Sopladora 12 Línea C" },
+    { path: "/sopladora1", icon: Factory,         label: "Máquina 12 Línea C" },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -26,12 +24,7 @@ export default function Sidebar() {
     >
       {/* Logo */}
       <div className="px-5 pt-6 pb-5" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-        <img
-          src={NEMAK_LOGO}
-          alt="Nemak"
-          className="h-8 w-auto object-contain"
-          style={{ maxWidth: "140px" }}
-        />
+        <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: "0.06em", color: "#1D1D1F" }}>MGMT</span>
       </div>
 
       {/* Navigation */}
