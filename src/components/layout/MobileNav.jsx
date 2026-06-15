@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { AlertTriangle, LayoutDashboard, ShoppingCart, Factory } from "lucide-react";
+import { AlertTriangle, LayoutDashboard, ShoppingCart, Factory, Lightbulb } from "lucide-react";
 
 export default function MobileNav() {
   const location = useLocation();
@@ -31,6 +31,7 @@ export default function MobileNav() {
           { path: "/kanban",     icon: LayoutDashboard, label: "Kanban" },
           { path: "/inventario", icon: ShoppingCart,    label: "Inventario" },
           { path: "/sopladora1", icon: Factory,         label: "Máq. 12C" },
+          { path: "/torretas",   icon: Lightbulb,       label: "Torretas" },
         ].map((item) => {
           const active = isActive(item.path);
           return (

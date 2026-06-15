@@ -17,6 +17,7 @@ import TriggerPortal from '@/pages/TriggerPortal';
 import Inventario from '@/pages/Inventario';
 import Kanban from '@/pages/Kanban';
 import Sopladora1 from '@/pages/Sopladora1';
+import TorretaDoc from '@/pages/TorretaDoc';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -51,6 +52,7 @@ const AuthenticatedApp = () => {
           <Route path="/kanban" element={<Kanban />} />
           <Route path="/inventario" element={<Inventario />} />
           <Route path="/sopladora1" element={<Sopladora1 />} />
+          <Route path="/torretas" element={<TorretaDoc />} />
         </Route>
       </Route>
 
