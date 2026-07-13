@@ -15,25 +15,40 @@
       "type": "string",
       "description": "Name identifier for this config entry"
     },
-    "role": {
+    "producer_name": {
       "type": "string",
-      "enum": [
-        "producer",
-        "consumer"
-      ],
-      "description": "For routes: whether this machine is a producer or consumer"
+      "description": "For routes: display name of the producer machine"
     },
-    "machine_id": {
+    "producer_id": {
       "type": "string",
-      "description": "Machine or zone identifier (e.g. sopladora1, kanban)"
+      "description": "For routes: machine_id of the producer (e.g. sopladora12c)"
+    },
+    "kanban_name": {
+      "type": "string",
+      "description": "For routes: display name of the kanban/buffer zone"
+    },
+    "kanban_id": {
+      "type": "string",
+      "description": "For routes: machine_id of the kanban zone"
+    },
+    "consumers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "machine_id": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "For routes: list of consumer machines on this route"
     },
     "material": {
       "type": "string",
-      "description": "Material handled by this route"
-    },
-    "linked_producer": {
-      "type": "string",
-      "description": "For consumers: which producer machine ID supplies them"
+      "description": "Material handled on this route"
     },
     "escalation_level": {
       "type": "string",
@@ -51,6 +66,10 @@
     "escalation_description": {
       "type": "string",
       "description": "Human-readable description of what happens at this escalation"
+    },
+    "route_id": {
+      "type": "string",
+      "description": "For escalation configs: id of the route this escalation belongs to"
     },
     "notification_emails": {
       "type": "array",
