@@ -18,6 +18,7 @@ import Inventario from '@/pages/Inventario';
 import Kanban from '@/pages/Kanban';
 import Sopladora1 from '@/pages/Sopladora1';
 import TorretaDoc from '@/pages/TorretaDoc';
+import Administracion from '@/pages/Administracion';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -53,6 +54,7 @@ const AuthenticatedApp = () => {
           <Route path="/inventario" element={<Inventario />} />
           <Route path="/sopladora1" element={<Sopladora1 />} />
           <Route path="/torretas" element={<TorretaDoc />} />
+          <Route path="/admin" element={<Administracion />} />
         </Route>
       </Route>
 

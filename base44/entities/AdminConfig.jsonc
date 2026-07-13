@@ -1,0 +1,83 @@
+{
+  "name": "AdminConfig",
+  "type": "object",
+  "properties": {
+    "config_type": {
+      "type": "string",
+      "enum": [
+        "route",
+        "escalation",
+        "notification"
+      ],
+      "description": "Type of configuration record"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name identifier for this config entry"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "producer",
+        "consumer"
+      ],
+      "description": "For routes: whether this machine is a producer or consumer"
+    },
+    "machine_id": {
+      "type": "string",
+      "description": "Machine or zone identifier (e.g. sopladora1, kanban)"
+    },
+    "material": {
+      "type": "string",
+      "description": "Material handled by this route"
+    },
+    "linked_producer": {
+      "type": "string",
+      "description": "For consumers: which producer machine ID supplies them"
+    },
+    "escalation_level": {
+      "type": "string",
+      "enum": [
+        "green",
+        "yellow",
+        "red"
+      ],
+      "description": "For escalation configs: the signal level"
+    },
+    "trigger_minutes": {
+      "type": "number",
+      "description": "For escalation configs: minutes elapsed before this level activates"
+    },
+    "escalation_description": {
+      "type": "string",
+      "description": "Human-readable description of what happens at this escalation"
+    },
+    "notification_emails": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "For notification configs: list of emails to notify"
+    },
+    "notification_level": {
+      "type": "string",
+      "enum": [
+        "green",
+        "yellow",
+        "red",
+        "all"
+      ],
+      "description": "Which escalation level triggers this notification group"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this configuration is active"
+    }
+  },
+  "required": [
+    "config_type",
+    "name",
+    "is_active"
+  ]
+}

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { AlertTriangle, LayoutDashboard, LogOut, ShoppingCart, Factory, Lightbulb } from "lucide-react";
+import { AlertTriangle, LayoutDashboard, LogOut, ShoppingCart, Factory, Lightbulb, Settings } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 export default function Sidebar() {
@@ -11,6 +11,7 @@ export default function Sidebar() {
     { path: "/inventario", icon: ShoppingCart,    label: "Inventario" },
     { path: "/sopladora1", icon: Factory,         label: "Máquina 12 Línea C" },
     { path: "/torretas",   icon: Lightbulb,       label: "Torretas de Luz" },
+    { path: "/admin",      icon: Settings,        label: "Administración" },
   ];
 
   const isActive = (path) => location.pathname === path;
